@@ -1,0 +1,76 @@
+[tool.poetry]
+name = "stock-magi-system"
+version = "0.1.0"
+description = "MAGI-inspired multi-agent stock analysis system using Microsoft Agent Framework (Phase 1 MVP)"
+authors = ["Stock MAGI Team"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Agent Framework (prerelease version pinned for stability)
+agent-framework-azure-ai = "1.0.0b251223"
+# FastAPI and ASGI server
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+# Data validation
+pydantic = "^2.10.0"
+pydantic-settings = "^2.6.0"
+# HTTP client for MCP
+httpx = "^0.28.0"
+# Python standard library enhancements
+python-dotenv = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+# Linting and formatting (Ruff replaces black, isort, flake8)
+ruff = "^0.8.0"
+# Type checking
+mypy = "^1.13.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers --cov=src --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true

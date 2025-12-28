@@ -1,0 +1,10 @@
+{
+  "_comment": "Phase 1 では使用しません。Morningstar は Foundry Tool Catalog から直接利用します。",
+  "_comment2": "Phase 2 で Yahoo Finance npm MCP Server 統合時に使用予定。",
+  "yahoo-finance": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-yahoo-finance"],
+    "enabled": false,
+    "description": "Yahoo Finance MCP Server for stock data (Phase 2)"
+  }
+}

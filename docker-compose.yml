@@ -1,0 +1,34 @@
+# Docker Compose for Stock MAGI System (開発環境用)
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # .env ファイルから環境変数を読み込み
+      - FOUNDRY_ENDPOINT=${FOUNDRY_ENDPOINT}
+      - FOUNDRY_API_KEY=${FOUNDRY_API_KEY}
+      - FOUNDRY_DEPLOYMENT=${FOUNDRY_DEPLOYMENT}
+      - FOUNDRY_API_VERSION=${FOUNDRY_API_VERSION:-2024-12-01}
+      - APP_ENV=development
+      - LOG_LEVEL=info
+    volumes:
+      # ホットリロード用 (開発環境のみ)
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+# 使用方法:
+# 1. .env ファイルを作成 (cp .env.example .env)
+# 2. FOUNDRY_ENDPOINT, FOUNDRY_API_KEY を設定
+# 3. docker compose up --build
+# 4. http://localhost:8000/docs でAPI確認
