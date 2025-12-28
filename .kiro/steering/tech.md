@@ -2,107 +2,115 @@
 
 ## 言語とランタイム
 ### 主要言語
-- **TypeScript** (必須)
-  - 理由: Copilot+ PC (ARM64)でのPythonライブラリ互換性問題を回避
-  - バージョン: 5.3以上（最新安定版）
-  - 厳格な型チェック有効化（`strict: true`）
-  - 学習リソース: [TypeScript公式ドキュメント](https://www.typescriptlang.org/docs/)
+- **Python 3.11+** (必須)
+  - 理由: Microsoft Agent Framework の最新機能サポート、AI/MLエコシステム親和性
+  - バージョン: 3.11以上（Agent Framework 要件）
+  - 型ヒント必須（mypy または Pyright でチェック）
+  - パッケージ管理: Poetry（依存関係管理）
+  - 学習リソース: [Python公式ドキュメント](https://docs.python.org/ja/3/)
 
 ### 実行環境
-- **Node.js**: v20 LTS以上
-- **開発環境**: Windows ARM64対応
-- 学習リソース: [Node.js公式ガイド](https://nodejs.org/en/docs/)
+- **Python Runtime**: 3.11+
+- **非同期処理**: asyncio + async/await パターン
+- **開発環境**: Windows ARM64対応（Python標準サポート）
+- 学習リソース: [Python Async/Await ガイド](https://docs.python.org/ja/3/library/asyncio.html)
 
 ## クラウドプラットフォーム
 ### 優先クラウド: Azure
-- **理由**: Microsoft Foundry統合、Azure OpenAI利用
+- **理由**: Microsoft Foundry統合、Agent Framework ネイティブサポート
 - **主要サービス**:
-  - Azure Functions（サーバーレス実行環境）
-  - Azure OpenAI Service（LLM推論）
+  - Azure Container Apps（コンテナベース実行環境、Python対応、自動スケーリング）
+  - Microsoft Foundry（LLMモデル管理、プロンプト実験、コスト追跡）
   - Azure Storage（データ永続化）
   - Azure Key Vault（シークレット管理）
+  - Application Insights（ログ、トレーシング）
 - **学習リソース**:
   - [Azure Fundamentals](https://learn.microsoft.com/ja-jp/training/azure/)
-  - [Azure Functions入門](https://learn.microsoft.com/ja-jp/azure/azure-functions/)
-  - [Azure OpenAI Service](https://learn.microsoft.com/ja-jp/azure/ai-services/openai/)
+  - [Azure Container Apps入門](https://learn.microsoft.com/ja-jp/azure/container-apps/)
+  - [Microsoft Foundry (旧 Azure AI Foundry)](https://learn.microsoft.com/ja-jp/azure/ai-studio/)
   - [Azure無料アカウント](https://azure.microsoft.com/ja-jp/free/)
-
 ## アーキテクチャパターン
-### ヘキサゴナルアーキテクチャ（Ports & Adapters）
-- **コアドメイン**: エージェント分析ロジック、合議アルゴリズム
-- **ポート**: インターフェース定義（データソース、LLM、ストレージ）
-- **アダプター**: 具体実装（MCP、Azure OpenAI、Azure Storage）
+### Agent Framework + 再利用可能モジュール設計
+- **共通基盤層** (`src/common/`):
+  - `ReusableConsensusOrchestrator`: ドメイン非依存な汎用マルチエージェント合議エンジン
+  - `MCPPluginRegistry`: 複数MCPサーバーの統一管理
+  - `VotingStrategy`: 多数決/重み付け投票の戦略パターン実装
+  - **目的**: 株式以外のドメイン（不動産、医療など）でも再利用可能
+  
+- **ドメイン固有層** (`src/stock_magi/`):
+  - エージェント定義（Melchior, Balthasar, Casper）
+  - 株式分析プロンプトテンプレート
+  - FastAPI エンドポイント
+  
 - **学習リソース**: 
-  - [ヘキサゴナルアーキテクチャ解説](https://alistair.cockburn.us/hexagonal-architecture/)
-  - [クリーンアーキテクチャ](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+  - [Microsoft Agent Framework 公式](https://github.com/microsoft/agent-framework)
+  - [Agent Framework ドキュメント](https://microsoft.github.io/agent-framework/)
+  - [マルチエージェントシステム設計](https://learn.microsoft.com/ja-jp/azure/ai-studio/concepts/agents)
 
-### プラグインアーキテクチャ
-- **エージェントレジストリ**: 動的なエージェント登録・管理
-- **MCPコネクタ**: プラグイン方式でデータソース追加
-- **合議アルゴリズム**: 戦略パターンで切り替え可能
-- **学習リソース**:
-  - [デザインパターン解説](https://refactoring.guru/ja/design-patterns)penAI、Azure Storage）
-
-### プラグインアーキテクチャ
-- **エージェントレジストリ**: 動的なエージェント登録・管理
-- **MCPコネクタ**: プラグイン方式でデータソース追加
-- **合議アルゴリズム**: 戦略パターンで切り替え可能
-
+### フレームワーク活用方針
+- **カスタム実装を最小化**: Agent Framework の組み込み機能（GroupChat, MCP Plugin）を最大限活用
+- **70%コード削減**: フルスクラッチ実装(1,500行) → Agent Framework活用(300-500行)
 ## 技術スタック
-### フロントエンド/CLI (Phase 1: MVP)
-- **CLI**: Commander.js（コマンドラインインターフェース）
-- **出力**: テキストベース（chalk.jsでカラー表示）
-
-### フロントエンド/Web (Phase 2)
-- **フレームワーク**: Next.js 14+ (App Router)
-- **UIライブラリ**: Tailwind CSS + shadcn/ui
-- **状態管理**: Zustand または React Context
+### Core Framework
+- **Agent Framework**: `agent-framework-azure-ai --pre` (⚠️ プレリリース版)
+  - GroupChatOrchestrator（マルチエージェント合議）
+  - MCPServerPlugin（Model Context Protocol ネイティブサポート）
+  - Agent, AssistantAgent, UserProxyAgent
+- **学習リソース**: [Agent Framework GitHub](https://github.com/microsoft/agent-framework)
 
 ### バックエンド
-- **ランタイム**: Azure Functions v4 (TypeScript)
-- **フレームワーク**: なし（軽量化のため標準Azure Functions使用）
-- **API仕様**: REST API（将来的にGraphQL検討）
+- **APIフレームワーク**: FastAPI 0.100+
+  - 高速、非同期対応、自動OpenAPI生成
+  - Pydantic による型安全なリクエスト/レスポンス検証
+- **ランタイム**: Uvicorn（ASGI サーバー）
+- **API仕様**: REST API（OpenAPI 3.1 自動生成）
 
 ### LLMサービス
-- **プライマリ**: Azure OpenAI Service
-  - モデル: GPT-4 Turbo / GPT-4o（コスト効率重視）
-  - SDK: `@azure/openai`
-- **抽象化層**: LLMProviderインターフェース
-  - Azure OpenAI実装
-  - ローカルLLM実装（将来用）
+- **プライマリ**: Microsoft Foundry (旧 Azure AI Foundry)
+  - モデル: GPT-4o（コスト効率重視）
+  - SDK: `azure-ai-agent` (Agent Framework 統合)
+  - 機能: モデル管理、プロンプト実験、コスト追跡、トレーシング
+- **学習リソース**: [Microsoft Foundry ドキュメント](https://learn.microsoft.com/ja-jp/azure/ai-studio/)
 
-### MCPプロトコル
-- **実装**: Model Context Protocol SDK
+### MCP Protocol
+- **実装**: Agent Framework の MCPServerPlugin（ネイティブ統合）
 - **対応サーバー**:
-  - 株式データ用MCPサーバー
-  - Azure/AWSナレッジベース用MCPサーバー
-  - DuckDB用MCPサーバー（Phase 3 - Pending）
+  - Yahoo Finance MCP Server (`@modelcontextprotocol/server-yahoo-finance`)
+  - Azure Docs MCP Server (`@modelcontextprotocol/server-azure-docs`)
+  - DuckDB MCP Server（Phase 3 - Pending）
+- **管理**: `MCPPluginRegistry` による統一管理
+- **学習リソース**: [MCP Specification](https://modelcontextprotocol.io/)
 
 ### データストレージ
-- **Phase 1 (MVP)**: Azure Blob Storage（JSON形式）
-- **Phase 2**: Azure Table Storage または Cosmos DB（NoSQL）
-- **Phase 3 (Pending)**: DuckDB統合（コネクタ仕様確定後）
+- **Phase 1 (MVP)**: なし（ステートレス）
+- **Phase 2**: Azure Table Storage または Cosmos DB（分析履歴保存）
+- **Phase 3 (Pending)**: DuckDB統合（時系列株式データ管理）
 
 ### テスティング
-- **ユニットテスト**: Vitest（高速、TypeScript親和性）
-- **E2Eテスト**: Playwright（Phase 2以降）
-- **モック**: MSW (Mock Service Worker)
-- **カバレッジ**: c8 または Vitest内蔵
+- **ユニットテスト**: pytest + pytest-asyncio
+- **モック**: unittest.mock（Agent Framework モック）
+- **統合テスト**: TestClient (FastAPI) + ローカル MCP サーバー
+- **カバレッジ**: pytest-cov
 
 ### CI/CD
 - **CI**: GitHub Actions
-  - テスト自動実行
-  - リント（ESLint + Prettier）
-  - ビルド検証
-- **CD**: Azure Deployment（Azure Functions Deploy Action）
+  - テスト自動実行 (`pytest`)
+  - リント/フォーマット (`ruff check`, `ruff format`)
+  - Dockerビルド検証
+- **CD**: Azure Container Apps Deployment（GitHub Actions）
 
 ### コーディング規約
-- **リンター**: ESLint with TypeScript plugin
-- **フォーマッター**: Prettier
+- **リンター/フォーマッター**: Ruff（超高速 Linter + Formatter）
+- **型チェック**: mypy または Pyright
 - **コミット規約**: Conventional Commits
 - **ブランチ戦略**: Git Flow（main, develop, feature/*, hotfix/*）
 
 ## 型安全性
+### 必須ルール
+- **型ヒント必須**: すべての関数引数と戻り値に型アノテーション
+- **Pydantic モデル**: 外部API境界でのデータ検証
+- **mypy strict mode**: 型チェック厳格化（`strict = true`）
+- **Any型禁止**: 不明な型は `object` または Protocol 使用
 ### 必須ルール
 - `any`型の使用禁止（unknown使用を推奨）
 - すべての関数に明示的な戻り値型
@@ -124,12 +132,6 @@
 - **APIキー暗号化**: Azure Key Vault使用
 - **ログマスキング**: 機密情報の自動マスキング
 - **依存関係スキャン**: Dependabot有効化
-
-## パフォーマンス
-- **キャッシング**: Azure Cache for Redis（Phase 2）
-- **並列処理**: Promise.all()でエージェント分析並列実行
-- **レスポンス目標**: <3秒（単一銘柄分析）
-
 ## ドキュメント方針
 ### 教育的配慮（最重要）
 このプロジェクトは実用的な学習教材としても機能することを重視します。
@@ -140,13 +142,13 @@
 - **豊富な例とコメント**: すべてのコードに教育的コメント
 - **トラブルシューティング**: よくあるエラーと解決方法を記録
 
-#### Python開発者向け配慮
-- **詳細なコメント**: TypeScript構文の説明
+#### Agent Framework 学習支援
+- **詳細なコメント**: Agent Framework APIの使用方法を説明
 - **Changelog詳細記録**: 各変更の理由と影響
-- **実装ガイド**: TypeScript特有パターンの解説
-- **対応表**: Python概念 → TypeScript実装マッピング
+- **実装ガイド**: マルチエージェント設計パターンの解説
+- **再利用方法**: `src/common/` モジュールを他ドメインに適用する方法
 
-#### Azure初学者向け配慮
+#### Azure/Foundry初学者向け配慮
 - **サービス説明**: 使用する各Azureサービスの役割を明記
 - **設定手順**: Azure Portal操作を画面キャプチャ付きで記録
 - **コスト説明**: 各リソースのコスト影響を明示
@@ -156,10 +158,14 @@
 - `CHANGELOG.md`: すべての変更を詳細記録（教育的説明付き）
 - `README.md`: セットアップ、実行方法
 - `docs/ARCHITECTURE.md`: アーキテクチャ詳細（図解付き）
-- `docs/TYPESCRIPT_GUIDE.md`: Python開発者向けTypeScript入門
-- `docs/AZURE_GUIDE.md`: Azure初学者向けガイド（新規追加）
-- `docs/LEARNING_PATH.md`: 推奨学習順序と各段階の目標（新規追加）
-- `docs/TROUBLESHOOTING.md`: よくある問題と解決方法（新規追加）
+- `docs/AGENT_FRAMEWORK_GUIDE.md`: Agent Framework 入門（新規）
+- `docs/MCP_INTEGRATION.md`: MCP Protocol 解説（新規）
+- `docs/FOUNDRY_GUIDE.md`: Microsoft Foundry 使い方（新規）
+- `docs/REUSABILITY_GUIDE.md`: 他ドメインへの流用方法（新規）
+- `docs/PYTHON_GUIDE.md`: Python async/await, 型ヒント入門（新規）
+- `docs/LEARNING_PATH.md`: 推奨学習順序と各段階の目標
+- `docs/TROUBLESHOOTING.md`: よくある問題と解決方法
+- `docs/RESOURCES.md`: 学習リソース集
 - `docs/RESOURCES.md`: 学習リソース集（新規追加）
 ### 必須ドキュメント
 - `CHANGELOG.md`: すべての変更を詳細記録

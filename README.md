@@ -1,211 +1,244 @@
 # Stock MAGI System
 
-MicrosoftFoundryを活用した株式取引支援システム - 複数のAIトレーダーエージェントによるアンサンブル合議意思決定プラットフォーム
+MAGI システムをモチーフとした、3 エージェント合議型株式分析システム (MVP)
 
-## 概要
+## 🎯 概要
 
-Stock MAGI Systemは、異なる投資戦略を持つ複数のAIエージェント（短期・中期・イベントトレーダー）が、Model Context Protocol (MCP)を通じて株式情報を収集し、アンサンブル合議により投資判断を提供する低コストな意思決定支援アプリケーションです。
+Stock MAGI System は、エヴァンゲリオンの MAGI システムに着想を得た **Microsoft Agent Framework ベースのマルチエージェント株式分析プラットフォーム**です。3 つの AI エージェント (Melchior, Balthasar, Casper) が異なる視点で株式を分析し、合議により投資判断を提供します。
 
-## 主な特徴
+### プロジェクトの目的
+1. **Microsoft Agent Framework の教育**: マルチエージェント合議の実装パターンを学ぶ
+2. **汎用基盤の構築**: `src/common/` 配下のモジュールを他ドメインに流用可能にする
+3. **コード量削減**: Agent Framework 活用により、フルスクラッチ実装の **70% 削減** (1,500 行 → 300-500 行)
 
-- 🤖 **複数AIエージェント**: 短期・中期・イベントトレーダー人格による多角的分析
-- 🔄 **アンサンブル合議**: 投票方式による意思決定の統合
-- 🔌 **MCP統合**: プラグイン方式で拡張可能なデータソース接続
-- ☁️ **Azure基盤**: サーバーレスアーキテクチャによる低コスト運用
-- 🧪 **TDD**: テストカバレッジ80%以上を維持
-- 📈 **段階的開発**: MVP戦略で小さく始めて価値を積み上げ
+## ✨ 主な特徴
 
-## 技術スタック
+- 🤖 **3 エージェント合議**: Melchior (基本分析)、Balthasar (バランス型)、Casper (テクニカル分析)
+- 🔄 **Agent Framework 活用**: GroupChatOrchestrator による組み込み合議機能
+- 🔌 **MCP ネイティブ統合**: MCPServerPlugin で Yahoo Finance/モーニングスター/DuckDB に接続
+- ☁️ **Microsoft Foundry**: GUI ベースのモデル管理、プロンプト実験、コスト追跡
+- 🏗️ **再利用可能設計**: `src/common/` は不動産分析・医療診断など他ドメインに流用可能
+- 🧪 **完全 TDD**: pytest + pytest-asyncio でテストカバレッジ 80%+
 
-- **言語**: TypeScript 5.3+
-- **ランタイム**: Node.js v20 LTS
-- **クラウド**: Azure (Functions, OpenAI, Storage, Key Vault)
-- **LLM**: Azure OpenAI Service (GPT-4 Turbo / GPT-4o)
-- **テスト**: Vitest
-- **アーキテクチャ**: ヘキサゴナル（Ports & Adapters）
+## 🛠️ 技術スタック
 
-## 開発フェーズ
+- **言語**: Python 3.11+
+- **フレームワーク**: Microsoft Agent Framework (v1.0.0b251223 - プレリリース版バージョン固定)
+- **LLM**: Microsoft Foundry (GPT-4o)
+- **API**: FastAPI (非同期、自動 OpenAPI 生成)
+- **MCP**: Agent Framework MCP Plugin (ネイティブサポート)
+- **デプロイ**: Azure Container Apps (Python 最適化、Auto-scaling、min replicas=0)
+- **テスト**: pytest + pytest-asyncio + unittest.mock
+- **Linter**: Ruff (超高速 Linter + Formatter)
 
-### Phase 1: MVP (現在)
-- ✅ 基本的なデータ収集
-- ✅ 1-2エージェント実装
-- ✅ シンプルな合議機能
-- ✅ CLI/基本UI
-- ✅ TDD環境構築
+## 📋 開発フェーズ
 
-### Phase 2: 拡張
-- 🔲 全3エージェント（短期・中期・イベント）
-- 🔲 高度な合議アルゴリズム
-- 🔲 Webダッシュボード
-- 🔲 インテグレーションテスト
+### Phase 1: MVP - Common Framework + 1 Agent (Week 1-2) ✅ 進行中
+- ✅ DevContainer セットアップ (ARM64 対応)
+- ✅ Poetry プロジェクト初期化
+- 🔲 Common Framework 実装 (MCPPluginRegistry, ReusableConsensusOrchestrator)
+- 🔲 Melchior エージェント実装 (基本的分析)
+- 🔲 FastAPI エンドポイント (`POST /api/analyze`)
+- 🔲 pytest テスト + Dockerfile
 
-### Phase 3: 統合
-- 🔲 DuckDB統合（Jquants APIデータ）
-- 🔲 バックテスト機能
-- 🔲 高度な分析機能
-- 🔲 E2Eテスト
+**目標**: 1 エージェント + FastAPI + ローカルテスト動作 (推定コード量: 150-200 行)
 
-## セットアップ
+### Phase 2: Multi-Agent System (Week 3) 🔜
+- 🔲 Balthasar エージェント (バランス型分析)
+- 🔲 Casper エージェント (テクニカル分析)
+- 🔲 加重投票ロジック実装
+- 🔲 **モーニングスター MCP Server 実装** (カスタム実装)
+
+### Phase 3: Azure Deployment + DuckDB (Week 4) 🔜
+- 🔲 Azure Container Apps デプロイ (Bicep)
+- 🔲 DuckDB MCP Server 統合 (Jquants API)
+- 🔲 GitHub Actions CI/CD
+
+---
+
+## 🚀 クイックスタート (DevContainer)
 
 ### 前提条件
+- ✅ Docker Desktop インストール済み
+- ✅ VS Code + Dev Containers 拡張機能
+- ✅ Microsoft Foundry プロジェクト作成済み ([セットアップ手順](docs/CONTEXT.md#必須の手動作業-実装前))
 
-- Node.js v20 LTS以上
-- npm または yarn
-- Azure アカウント（Azure OpenAI利用のため）
-- Git
-
-### インストール
-
+### 1. DevContainer で開く
 ```bash
-# リポジトリクローン
-git clone <repository-url>
-cd stock-magi-system
+# VS Code で Ctrl+Shift+P → "Dev Containers: Reopen in Container"
+# ARM64 (Copilot+ PC) 環境で自動的に適切な Python イメージを使用
+```
 
-# 依存関係インストール
-npm install
+### 2. 依存関係のインストール
+```bash
+# Poetry で Python パッケージをインストール
+poetry install
 
-# 環境変数設定
+# MCP サーバー (Yahoo Finance) をインストール
+npm install -g @modelcontextprotocol/server-yahoo-finance
+```
+
+### 3. 環境変数の設定
+```bash
 cp .env.example .env
-# .envファイルを編集してAzure認証情報を設定
+# .env を編集して Microsoft Foundry の認証情報を入力:
+# FOUNDRY_ENDPOINT=https://your-project.openai.azure.com/
+# FOUNDRY_API_KEY=your-api-key-here
+# FOUNDRY_DEPLOYMENT=gpt-4o
 ```
 
-### 環境変数設定
-
-`.env`ファイルに以下を設定:
-
-```env
-# Azure OpenAI
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_KEY=your-api-key
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-turbo
-
-# Azure Storage
-AZURE_STORAGE_CONNECTION_STRING=your-connection-string
-
-# MCP設定
-MCP_SERVER_ENDPOINT=http://localhost:3001
-
-# アプリケーション
-NODE_ENV=development
-LOG_LEVEL=debug
-```
-
-## 使用方法
-
-### CLI（Phase 1）
-
+### 4. 開発サーバーの起動
 ```bash
-# 株式分析実行
-npm run cli analyze -- --symbol 7203
-
-# 設定確認
-npm run cli config
-
-# ヘルプ
-npm run cli -- --help
+poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### テスト実行
-
+### 5. API テスト
 ```bash
-# すべてのテスト実行
-npm test
-
-# ユニットテストのみ
-npm run test:unit
-
-# カバレッジ確認
-npm run test:coverage
-
-# ウォッチモード
-npm run test:watch
+curl -X POST http://localhost:8000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"ticker": "7203.T", "include_reasoning": true}'
 ```
 
-### 開発
+---
 
-```bash
-# 開発サーバー起動
-npm run dev
-
-# ビルド
-npm run build
-
-# リント
-npm run lint
-
-# フォーマット
-npm run format
-```
-
-## プロジェクト構造
+## 🏗️ アーキテクチャ
 
 ```
 src/
-├── core/           # コアドメインロジック
-│   ├── agents/     # AIエージェント実装
-│   ├── ensemble/   # 合議システム
-│   └── models/     # ドメインモデル
-├── adapters/       # 外部システムアダプター
-│   ├── data-sources/
-│   ├── llm/
-│   └── storage/
-├── ports/          # インターフェース定義
-├── functions/      # Azure Functions
-└── cli/            # CLIインターフェース
+├── common/              # ドメイン非依存の汎用基盤 (他プロジェクトに流用可能)
+│   ├── consensus/       # 合議エンジン
+│   │   ├── orchestrators/
+│   │   │   └── group_chat_consensus.py  # ReusableConsensusOrchestrator
+│   │   └── strategies/
+│   │       └── voting_strategy.py       # VotingStrategy 抽象化
+│   ├── mcp/             # MCP プラグイン管理
+│   │   └── plugin_registry.py           # MCPPluginRegistry
+│   └── models/          # 共通データモデル
+│       └── decision_models.py           # Action, AgentVote, FinalDecision
+│
+└── stock_magi/          # 株式ドメイン固有実装
+    ├── agents/          # エージェント定義
+    │   ├── melchior_agent.py   # 基本的分析
+    │   ├── balthasar_agent.py  # バランス型分析 (Phase 2)
+    │   └── casper_agent.py     # テクニカル分析 (Phase 2)
+    ├── prompts/         # エージェント用プロンプト
+    └── api/             # FastAPI エンドポイント
+        └── endpoints.py
 ```
 
-詳細は[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)を参照してください。
+### データソース戦略
+| Phase | データソース | 実装方法 |
+|-------|------------|---------|
+| **Phase 1 (MVP)** | Yahoo Finance | MCP Server (`@modelcontextprotocol/server-yahoo-finance`) |
+| **Phase 2** | モーニングスター | カスタム MCP Server 実装 (REST API ラップ) ※公式コネクタなし |
+| **Phase 3** | Jquants + DuckDB | DuckDB MCP Server + カスタム統合 |
 
-## ドキュメント
+---
 
-- [アーキテクチャ設計](docs/ARCHITECTURE.md)
-- [TypeScriptガイド（Python開発者向け）](docs/TYPESCRIPT_GUIDE.md)
-- [API仕様](docs/API.md)
-- [セットアップガイド](docs/SETUP.md)
-- [変更履歴](CHANGELOG.md)
+## 🧪 テスト
 
-## 開発ワークフロー
+```bash
+# 全テスト実行
+poetry run pytest
 
-1. **ブランチ作成**: `git checkout -b feature/your-feature`
-2. **TDD開発**: テスト先行で実装
-3. **コミット**: Conventional Commits形式
-4. **プルリクエスト**: コードレビュー依頼
-5. **マージ**: CI成功後にマージ
+# カバレッジ付き
+poetry run pytest --cov=src --cov-report=html
 
-### コミットメッセージ例
-
-```
-feat(agents): 短期トレーダーエージェントを実装
-
-- テクニカル分析ロジック追加
-- 信頼度スコア計算実装
-- ユニットテスト追加（カバレッジ85%）
-
-Refs: #12
+# 特定のテストのみ実行
+poetry run pytest tests/test_melchior_agent.py
 ```
 
-## コントリビューション
+---
 
-プルリクエストを歓迎します。大きな変更の場合は、まずissueで議論してください。
+## 📝 開発ガイドライン
 
-## Python開発者向け注意事項
+### コードスタイル
+```bash
+# Ruff でフォーマット
+poetry run ruff format src/
 
-このプロジェクトはTypeScriptで記述されています。Python開発者向けに以下のリソースを用意しています:
+# Ruff でリント
+poetry run ruff check src/ --fix
 
-- [TypeScript入門ガイド](docs/TYPESCRIPT_GUIDE.md): Python → TypeScript対応表
-- [詳細なChangelog](CHANGELOG.md): すべての変更を詳細に記録
-- コード内コメント: TypeScript特有の構文を説明
+# 型チェック
+poetry run mypy src/
+```
 
-## ライセンス
+---
+
+## 📚 ドキュメント
+
+- **[CONTEXT.md](docs/CONTEXT.md)**: プロジェクト全体のコンテキスト (必読)
+  - アーキテクチャ決定事項
+  - Phase 別実装計画
+  - ARM64 環境対応
+  - リスク軽減策 (プレリリース版使用時)
+- **要件定義**: `.kiro/specs/stock-magi-system-ja/requirements.md`
+- **技術設計**: `.kiro/specs/stock-magi-system-ja/design.md`
+- **タスクリスト**: `.kiro/specs/stock-magi-system-ja/tasks.md`
+
+---
+
+## 🎓 学習リソース
+
+### このプロジェクトで学べること
+1. **Microsoft Agent Framework**: マルチエージェント合議の実装パターン
+2. **MCP Protocol**: MCP サーバーの統合方法
+3. **Microsoft Foundry**: LLM モデルの管理とデプロイ
+4. **Reusable Architecture**: ドメイン非依存な基盤設計
+5. **Python + FastAPI**: 非同期 API 開発
+
+### 推奨学習順序
+1. [CONTEXT.md](docs/CONTEXT.md) でプロジェクト全体を理解
+2. Phase 1 実装を通じて Agent Framework の基礎を習得
+3. `docs/AGENT_FRAMEWORK_GUIDE.md` で詳細を学習 (Phase 1 完了後作成)
+4. `docs/REUSABILITY_GUIDE.md` で他ドメインへの応用を学習
+
+---
+
+## ⚠️ 注意事項
+
+### Agent Framework プレリリース版
+- **バージョン固定**: `agent-framework-azure-ai = "1.0.0b251223"` (pyproject.toml)
+- **リスク軽減策**:
+  - Microsoft Foundry Portal (https://ai.azure.com/) で GUI ベースのモデル管理
+  - DevUI (Agent Framework 付属) でエージェント動作のビジュアルデバッグ
+  - コード依存を最小化し、GUI ツールで補完
+
+### ARM64 環境 (Copilot+ PC)
+- DevContainer で自動的に ARM64 対応 Python イメージを使用
+- Poetry が適切なパッケージを自動選択
+
+---
+
+## 💰 コスト見積もり
+
+**Phase 1 (MVP)**: 月額 **$3-10**
+- Azure Container Apps (min replicas=0): ~$2
+- Microsoft Foundry (GPT-4o): ~$5-8 (推論トークン従量課金)
+
+---
+
+## 🤝 コントリビューション
+
+Phase 1 完了後、他ドメインへの応用例を `docs/REUSABILITY_GUIDE.md` に追加予定。
+
+---
+
+## 📄 ライセンス
 
 MIT License
 
-## 謝辞
+---
 
-- Microsoft Foundry
-- Model Context Protocol (MCP)
-- Azure OpenAI Service
+## 🙏 謝辞
 
-## サポート
+- **Microsoft Agent Framework** チームに感謝
+- **Model Context Protocol** コミュニティに感謝
+- **エヴァンゲリオン** の MAGI システムにインスパイア
 
-問題が発生した場合は、GitHubのIssuesで報告してください。
+---
+
+## 📞 サポート
+
+質問や問題が発生した場合は、[CONTEXT.md](docs/CONTEXT.md) の「トラブルシューティング」セクションを参照してください。

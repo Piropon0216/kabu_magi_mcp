@@ -7,74 +7,46 @@ stock-magi-system/
 ├── .github/
 │   └── workflows/          # GitHub Actions CI/CD
 ├── src/
-│   ├── core/               # コアドメインロジック
-│   │   ├── agents/         # トレーダーエージェント実装
-│   │   │   ├── registry.ts         # エージェントレジストリ
-│   │   │   ├── base-agent.ts       # エージェント基底インターフェース
-│   │   │   ├── short-term-agent.ts # 短期トレーダー
-│   │   │   ├── mid-term-agent.ts   # 中期トレーダー
-│   │   │   └── event-agent.ts      # イベントトレーダー
-│   │   ├── ensemble/       # 合議システム
-│   │   │   ├── consensus-engine.ts # 合議エンジン
-│   │   │   ├── voting-strategies.ts # 投票戦略
-│   │   │   └── decision.ts         # 意思決定モデル
-│   │   └── models/         # ドメインモデル
-│   │       ├── stock-data.ts       # 株式データモデル
-│   │       ├── analysis-result.ts  # 分析結果モデル
-│   │       └── decision.ts         # 判断モデル
-│   ├── adapters/           # 外部システムアダプター
-│   │   ├── data-sources/   # データソースアダプター
-│   │   │   ├── mcp-connector.ts    # MCPコネクタ基底
-│   │   │   ├── stock-api-adapter.ts # 株式APIアダプター
-│   │   │   └── mock-data-adapter.ts # モックデータ（Phase 1）
-│   │   ├── llm/            # LLMプロバイダー
-│   │   │   ├── llm-provider.ts     # LLMプロバイダーインターフェース
-│   │   │   ├── azure-openai.ts     # Azure OpenAI実装
-│   │   │   └── local-llm.ts        # ローカルLLM実装（将来）
-│   │   └── storage/        # ストレージアダプター
-│   │       ├── storage-provider.ts # ストレージインターフェース
-│   │       ├── azure-blob.ts       # Azure Blob実装
-│   │       └── local-file.ts       # ローカルファイル実装
-│   ├── ports/              # ポート定義（インターフェース）
-│   │   ├── data-source.port.ts     # データソースポート
-│   │   ├── llm-provider.port.ts    # LLMプロバイダーポート
-│   │   └── storage.port.ts         # ストレージポート
-│   ├── functions/          # Azure Functions（Phase 1: MVP）
-│   │   ├── analyze-stock/  # 株式分析Function
-│   │   │   ├── index.ts
-│   │   │   └── function.json
-│   │   └── health-check/   # ヘルスチェックFunction
-│   │       ├── index.ts
-│   │       └── function.json
-│   ├── cli/                # CLIインターフェース（Phase 1）
-│   │   ├── index.ts        # CLIエントリーポイント
-│   │   ├── commands/       # コマンド実装
-│   │   │   ├── analyze.ts  # 分析コマンド
-│   │   │   └── config.ts   # 設定コマンド
-│   │   └── ui/             # CLI出力フォーマット
-│   │       └── formatter.ts
-│   ├── web/                # Webアプリ（Phase 2）
-│   │   ├── app/            # Next.js App Router
-│   │   ├── components/     # Reactコンポーネント
-│   │   └── lib/            # ユーティリティ
-│   ├── config/             # 設定管理
-│   │   ├── app-config.ts   # アプリケーション設定
-│   │   └── env.ts          # 環境変数型定義
-│   └── utils/              # ユーティリティ
-│       ├── logger.ts       # ロギング
-│       ├── error-handler.ts # エラーハンドリング
-│       └── validator.ts    # バリデーション
+│   ├── common/             # 汎用基盤（ドメイン非依存・再利用可能）
+│   │   ├── consensus/      # マルチエージェント合議エンジン
+│   │   │   ├── orchestrators/
+│   │   │   │   └── group_chat_consensus.py  # GroupChat合議オーケストレーター
+│   │   │   └── strategies/
+│   │   │       ├── voting_strategy.py       # 多数決/重み付け投票
+│   │   │       └── confidence_aggregation.py # 信頼度ベース集約
+│   │   ├── mcp/            # MCP統合管理
+│   │   │   ├── plugin_registry.py           # MCPプラグイン統一管理
+│   │   │   └── data_source_adapter.py       # 汎用データソースアダプター
+│   │   └── models/         # 共通データモデル
+│   │       └── decision_models.py           # Action, AgentVote, FinalDecision
+│   ├── stock_magi/         # 株式ドメイン固有実装
+│   │   ├── agents/         # 株式分析エージェント
+│   │   │   ├── melchior_agent.py            # ファンダメンタルズ分析
+│   │   │   ├── balthasar_agent.py           # バランス分析
+│   │   │   └── casper_agent.py              # テクニカル分析
+│   │   ├── prompts/        # 株式分析プロンプト
+│   │   │   └── stock_analysis_prompts.py    # プロンプトテンプレート
+│   │   └── api/            # FastAPI エンドポイント
+│   │       └── endpoints.py                 # /api/analyze 実装
+│   └── main.py             # FastAPI アプリケーションエントリーポイント
 ├── tests/                  # テストファイル
-│   ├── unit/               # ユニットテスト
-│   │   ├── agents/
-│   │   ├── ensemble/
-│   │   └── adapters/
-│   ├── integration/        # インテグレーションテスト
-│   └── e2e/                # E2Eテスト（Phase 2）
+│   ├── common/             # 共通基盤のテスト
+│   │   ├── test_consensus.py                # 合議エンジンテスト
+│   │   └── test_mcp_registry.py             # MCP レジストリテスト
+│   └── stock_magi/         # ドメイン固有のテスト
+│       ├── test_agents.py                   # エージェントテスト
+│       └── test_api.py                      # API統合テスト
+├── infra/                  # インフラ定義
+│   └── main.bicep          # Azure Container Apps定義
+├── config/                 # 設定ファイル
+│   └── mcp_servers.json    # MCP サーバー設定
 ├── docs/                   # ドキュメント（教育重視）
 │   ├── ARCHITECTURE.md     # アーキテクチャ詳細（図解付き）
-│   ├── TYPESCRIPT_GUIDE.md # Python開発者向けTS入門
-│   ├── AZURE_GUIDE.md      # Azure初学者向けガイド
+│   ├── AGENT_FRAMEWORK_GUIDE.md  # Agent Framework 入門
+│   ├── MCP_INTEGRATION.md  # MCP プロトコル解説
+│   ├── FOUNDRY_GUIDE.md    # Microsoft Foundry 使い方
+│   ├── REUSABILITY_GUIDE.md # 他ドメインへの流用方法
+│   ├── PYTHON_GUIDE.md     # Python async/await, 型ヒント入門
 │   ├── LEARNING_PATH.md    # 推奨学習順序と各段階の目標
 │   ├── TROUBLESHOOTING.md  # よくある問題と解決方法
 │   ├── RESOURCES.md        # 学習リソース集
@@ -87,11 +59,10 @@ stock-magi-system/
 │   ├── settings.json       # エディター設定
 │   ├── launch.json         # デバッグ設定
 │   └── extensions.json     # 推奨拡張機能
-├── package.json            # npm依存関係
-├── tsconfig.json           # TypeScript設定
-├── vitest.config.ts        # Vitestテスト設定
-├── .eslintrc.js            # ESLint設定
-├── .prettierrc             # Prettier設定
+├── pyproject.toml          # Poetry 依存管理
+├── ruff.toml               # Ruff 設定（Linter/Formatter）
+├── pytest.ini              # pytest 設定
+├── Dockerfile              # Docker イメージ定義
 ├── .env.example            # 環境変数テンプレート
 ├── .gitignore              # Git除外設定
 ├── CHANGELOG.md            # 変更履歴（詳細記録）
@@ -99,41 +70,43 @@ stock-magi-system/
 ```
 
 ## モジュール境界
-### コアドメイン（ビジネスロジック）
-- `src/core/agents/`: エージェント実装（プラグイン可能）
-- `src/core/ensemble/`: 合議アルゴリズム
-- `src/core/models/`: ドメインモデル（型定義）
 
-### アダプター層（外部システム統合）
-- `src/adapters/data-sources/`: データ取得
-- `src/adapters/llm/`: LLM統合
-- `src/adapters/storage/`: データ永続化
+### 共通基盤層（ドメイン非依存・再利用可能）
+- `src/common/consensus/`: マルチエージェント合議エンジン（汎用）
+- `src/common/mcp/`: MCP プラグイン管理（汎用）
+- `src/common/models/`: 共通データモデル（Action, Decision など）
 
-### ポート層（インターフェース定義）
-- `src/ports/`: コアドメインとアダプター間の契約
+**再利用パターン**:
+- 不動産分析: `src/real_estate/` を追加、`src/common/` はそのまま流用
+- 医療診断: `src/medical/` を追加、合議エンジンを再利用
 
-### アプリケーション層
-- `src/functions/`: Azure Functions（サーバーレス）
-- `src/cli/`: CLIインターフェース
-- `src/web/`: Webアプリケーション（Phase 2）
+### ドメイン固有層
+- `src/stock_magi/agents/`: 株式分析エージェント（ペルソナ定義）
+- `src/stock_magi/prompts/`: 株式分析プロンプトテンプレート
+- `src/stock_magi/api/`: FastAPI エンドポイント
+
+### インフラ層
+- `infra/`: Azure Container Apps 定義（Bicep）
+- `config/`: MCP サーバー設定（JSON）
 
 ## 命名規則
+
 ### ファイル命名
-- **TypeScript**: kebab-case（例: `agent-registry.ts`）
-- **コンポーネント**: PascalCase（例: `AgentCard.tsx`）
-- **テスト**: `*.test.ts` または `*.spec.ts`
+- **Python**: snake_case（例: `group_chat_consensus.py`）
+- **設定ファイル**: kebab-case（例: `mcp-servers.json`）
+- **テスト**: `test_*.py`（pytest 規約）
 
 ### 変数・関数命名
-- **変数**: camelCase（例: `stockData`）
+- **変数**: snake_case（例: `stock_data`）
 - **定数**: UPPER_SNAKE_CASE（例: `MAX_RETRY_COUNT`）
-- **型/インターフェース**: PascalCase（例: `StockData`）
-- **関数**: camelCase（例: `analyzeStock()`）
-- **クラス**: PascalCase（例: `ShortTermAgent`）
+- **クラス**: PascalCase（例: `ReusableConsensusOrchestrator`）
+- **関数**: snake_case（例: `reach_consensus()`）
+- **ファクトリー関数**: `create_*`（例: `create_melchior_agent()`）
 
 ### 型定義命名
-- **インターフェース**: `I`プレフィックスなし（例: `Agent`）
-- **型エイリアス**: PascalCase（例: `AnalysisResult`）
-- **Enum**: PascalCase（例: `DecisionType`）
+- **Pydantic モデル**: PascalCase（例: `FinalDecision`）
+- **Enum**: PascalCase（例: `Action`）
+- **型ヒント**: snake_case（例: `decision: FinalDecision`）
 
 ## Git管理
 ### ブランチ戦略
@@ -170,31 +143,39 @@ feat(agents): 短期トレーダーエージェントを実装
 - ユニットテスト追加
 
 Refs: #12
-```
-
 ## 依存関係管理
+
 ### パッケージマネージャー
-- **npm**: デフォルト（package-lock.json使用）
+- **Poetry**: Python 依存関係管理（`pyproject.toml` 使用）
 
 ### 主要依存関係（予定）
-- `typescript`: ^5.3.0
-- `@azure/functions`: ^4.0.0
-- `@azure/openai`: 最新
-- `commander`: CLI
-- `zod`: バリデーション
-- `vitest`: テスト
-- `eslint`: リント
-- `prettier`: フォーマット
+- `agent-framework-azure-ai`: Agent Framework コア（⚠️ `--pre` プレリリース版）
+- `fastapi`: Web API フレームワーク
+- `uvicorn`: ASGI サーバー
+- `pydantic`: データバリデーション
+- `pytest`: テストフレームワーク
+- `pytest-asyncio`: 非同期テストサポート
+- `ruff`: Linter + Formatter（超高速）
+- `mypy`: 型チェック（オプション）
 
+### バージョン固定（プレリリース版対策）
 ## 環境変数管理
+
 ### 必須環境変数
 ```
-# Azure OpenAI
-AZURE_OPENAI_ENDPOINT=
-AZURE_OPENAI_API_KEY=
-AZURE_OPENAI_DEPLOYMENT_NAME=
+# Microsoft Foundry (旧 Azure AI Foundry)
+FOUNDRY_ENDPOINT=https://your-project.azure.ai.foundry.microsoft.com
+FOUNDRY_API_KEY=
+FOUNDRY_DEPLOYMENT=gpt-4o
 
-# Azure Storage
+# MCP サーバー設定（ローカル開発用）
+MCP_YAHOO_FINANCE_COMMAND=npx @modelcontextprotocol/server-yahoo-finance
+MCP_AZURE_DOCS_COMMAND=npx @modelcontextprotocol/server-azure-docs
+
+# アプリケーション
+PYTHON_ENV=development|production
+LOG_LEVEL=DEBUG|INFO|WARNING|ERROR
+```zure Storage
 AZURE_STORAGE_CONNECTION_STRING=
 
 # MCP設定
@@ -206,18 +187,22 @@ LOG_LEVEL=debug|info|warn|error
 ```
 
 ## 開発ワークフロー
-1. `feature/*`ブランチ作成
-2. TDDでテスト先行実装
+## 開発ワークフロー
+
+1. `feature/*` ブランチ作成
+2. TDD でテスト先行実装（pytest）
 3. コミット（Conventional Commits）
 4. プルリクエスト作成
-5. CI自動テスト実行
+5. CI 自動テスト実行（pytest, ruff check）
 6. コードレビュー
-7. `develop`へマージ
-8. 定期的に`main`へリリース
+7. `develop` へマージ
+8. 定期的に `main` へリリース
 
 ## ドキュメント更新
+
 ### 必須更新タイミング
 - **CHANGELOG.md**: すべてのコミット後
 - **README.md**: セットアップ手順変更時
-- **API.md**: APIインターフェース変更時
+- **API.md**: API インターフェース変更時
 - **ARCHITECTURE.md**: アーキテクチャ変更時
+- **AGENT_FRAMEWORK_GUIDE.md**: Agent Framework 使用パターン追加時
