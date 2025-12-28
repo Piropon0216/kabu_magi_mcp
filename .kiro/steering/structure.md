@@ -71,11 +71,15 @@ stock-magi-system/
 │   │   └── adapters/
 │   ├── integration/        # インテグレーションテスト
 │   └── e2e/                # E2Eテスト（Phase 2）
-├── docs/                   # ドキュメント
-│   ├── ARCHITECTURE.md     # アーキテクチャ詳細
+├── docs/                   # ドキュメント（教育重視）
+│   ├── ARCHITECTURE.md     # アーキテクチャ詳細（図解付き）
 │   ├── TYPESCRIPT_GUIDE.md # Python開発者向けTS入門
+│   ├── AZURE_GUIDE.md      # Azure初学者向けガイド
+│   ├── LEARNING_PATH.md    # 推奨学習順序と各段階の目標
+│   ├── TROUBLESHOOTING.md  # よくある問題と解決方法
+│   ├── RESOURCES.md        # 学習リソース集
 │   ├── API.md              # API仕様
-│   └── SETUP.md            # セットアップガイド
+│   └── SETUP.md            # セットアップガイド（詳細手順）
 ├── scripts/                # ビルド・デプロイスクリプト
 │   ├── setup.sh            # 初期セットアップ
 │   └── deploy.sh           # デプロイスクリプト
