@@ -63,14 +63,18 @@ out/
 .env.test
 .env.production
 
-# Python
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-.coverage
-poetry.lock
 
-# cc-sdd tools (moved to separate location)
-cc-sdd/
+# Virtual environments
+.venv/
+env/
+venv/
+
+# pytest cache
+.pytest_cache/
+
+# Coverage
+.coverage
