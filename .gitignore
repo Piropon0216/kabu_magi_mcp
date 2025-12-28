@@ -34,23 +34,6 @@ Thumbs.db
 # Test coverage
 coverage/
 .nyc_output/
-.coverage
-htmlcov/
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
-*.egg
-.pytest_cache/
-.mypy_cache/
-.pytype/
-poetry.lock
 
 # Logs
 logs/
@@ -79,3 +62,15 @@ out/
 # Misc
 .env.test
 .env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.coverage
+poetry.lock
+
+# cc-sdd tools (moved to separate location)
+cc-sdd/

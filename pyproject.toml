@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "stock-magi-system"
 version = "0.1.0"
-description = "MAGI-inspired multi-agent stock analysis system using Microsoft Agent Framework (Phase 1 MVP)"
+description = "MAGI-inspired multi-agent stock analysis system using Microsoft Agent Framework"
 authors = ["Stock MAGI Team"]
 readme = "README.md"
 packages = [{include = "src"}]

@@ -5,284 +5,90 @@
 形式は[Keep a Changelog](https://keepachangelog.com/ja/1.0.0/)に基づいており、
 このプロジェクトは[セマンティック バージョニング](https://semver.org/lang/ja/)に準拠しています。
 
+## Python開発者向け注意
+各エントリには詳細な説明と、TypeScript特有の実装について補足説明を含めています。
+
 ---
 
 ## [Unreleased]
 
-### Fixed (修正)
-
-#### Pydantic v2 対応と環境変数読み込み修正 - 2025-12-28
-
-**背景**: 初期実装では Pydantic v2 の環境変数読み込みメカニズムに不具合があり、Azure Foundry API 接続時に 500 エラーが発生していた。
-
-##### 修正内容
-
-1. **FoundryConfig (foundry_tool_registry.py)**
-   - ❌ **問題**: `env_prefix="FOUNDRY_"` により `FOUNDRY_FOUNDRY_ENDPOINT` を探索してしまう二重プレフィックスバグ
-   - ✅ **解決**: 
-     - フィールド名を小文字 (`foundry_endpoint`) から大文字 (`FOUNDRY_ENDPOINT`) に変更
-     - `env_prefix` を削除
-     - `SettingsConfigDict(extra="ignore")` で他の環境変数を無視
-     - 後方互換性のため `@property` メソッドで小文字属性アクセスをサポート
-   
-2. **Import パス修正 (group_chat_consensus.py)**
-   - ❌ **問題**: 相対 import `from ..models.decision_models` が `ModuleNotFoundError` を引き起こす
-   - ✅ **解決**: 絶対 import `from src.common.models.decision_models` に変更
-
-3. **Python キャッシュファイル対策 (.gitignore)**
-   - `__pycache__/`, `*.pyc`, `*.pyo`, `*.pyd`, `.pytest_cache/`, `.coverage`, `poetry.lock` を追加
-   - 14個のキャッシュディレクトリがリポジトリから除外された
-
-##### 検証結果
-
-- ✅ **API エンドポイント**: すべて正常動作 (GET `/`, GET `/api/health`, POST `/api/analyze`)
-- ✅ **環境変数読み込み**: `.env` から正しく設定を取得
-- ⚠️ **テスト結果**: 37 tests中 27 passed (73%), 10 failed
-  - 失敗原因: Pydantic v2 のバリデーションエラーメッセージ形式が変更されたため、テストの正規表現パターンが一致しない
-  - 影響範囲: `test_decision_models.py` (4件), `test_consensus_orchestrator.py` (3件), `test_foundry_tool_registry.py` (3件)
-  - **機能的には問題なし**: API 動作は正常、エラーメッセージのアサーション問題のみ
-- ✅ **カバレッジ**: 95% (主要機能は網羅)
-
-##### Known Issues (既知の問題)
-
-**テストアサーション修正が必要 (Phase 2 対応予定)**
-
-1. **Pydantic v2 エラーメッセージパターン不一致** (7件)
-   - 期待値: `"Confidence must be between 0.0 and 1.0"`
-   - 実際: `"Input should be greater than or equal to 0 [type=greater_than_equal, ...]"`
-   - 対応: `pytest.raises()` の `match` パラメータを Pydantic v2 形式に更新が必要
-
-2. **Foundry Tool Registry モック実装** (3件)
-   - Phase 1 MVP では Foundry Tool Catalog 統合がプレースホルダー実装
-   - `test_get_tool_morningstar_phase1`: Tool オブジェクトが未実装
-   - `test_get_tools_for_agent_melchior`: 返り値が dict (Tool オブジェクト化必要)
-   - Phase 2 で Microsoft Agent Framework の Tool 機構実装後に修正
-
-##### 影響範囲
-
-- ✅ **本番機能**: 影響なし (API は正常動作)
-- ⚠️ **テストスイート**: 10/37 テストが失敗 (アサーションのみの問題)
-- ✅ **開発環境**: `.gitignore` 更新によりクリーンな状態を維持
-
-## [0.1.0] - 2025-12-28
-
 ### Added (追加)
 
-#### Phase 1 MVP 完全実装
+#### Agent Framework 準備作業 - 2025-12-28
 
-**Microsoft Agent Framework ベースのマルチエージェント株式分析システムの基盤実装完了**
+**概要**: Azure AI Agent Framework 統合のための依存関係追加とプロジェクト整理
 
-##### 1. プロジェクト基盤・開発環境
+**追加された依存関係**:
+- `azure-ai-projects ^2.0.0b2`: Azure AI Foundry Agent Framework SDK
+  - 理由: 公式 Agent Framework クライアントライブラリ
+  - `agent-framework-azure-ai` が要求する最小バージョン
+- `azure-identity ^1.19.0`: Azure 認証ライブラリ
+  - 理由: `AIProjectClient` の認証に必要
+  - `DefaultAzureCredential` を使用したトークン取得
 
-- **DevContainer 環境** (`.devcontainer/devcontainer.json`)
-  - ARM64 Copilot+ PC 対応の Python 3.11 開発環境
-  - Poetry + Node.js (MCP サーバー用) 自動セットアップ
-  - VS Code 拡張機能統合 (Python, Pylance, Docker, Ruff)
+**環境変数**:
+- `PROJECT_ENDPOINT`: Azure AI Foundry プロジェクトエンドポイント
+  - 値: `https://con-agent-poc-resource.openai.azure.com/`
+  - 用途: Agent Framework の初期化に使用
 
-- **依存関係管理** (`pyproject.toml`)
-  - Microsoft Agent Framework v1.0.0b251223 (プレリリース版バージョン固定)
-  - FastAPI + uvicorn (非同期 API サーバー)
-  - Pydantic v2 (データバリデーション)
-  - pytest + pytest-asyncio (テストフレームワーク)
-  - Ruff (高速 Linter + Formatter)
+**試行錯誤と対策**:
 
-- **コンテナ化** (`Dockerfile`, `docker-compose.yml`)
-  - マルチステージビルド (依存関係分離)
-  - 非 root ユーザー実行
-  - ヘルスチェック統合
-  - 開発環境用 Docker Compose 設定
+1. **バージョン競合の解決**:
+   - 問題: 初回実装で `azure-ai-projects ^1.0.0b1` を指定したが、`agent-framework-azure-ai` が `>=2.0.0b2` を要求
+   - 対策: `pyproject.toml` を修正して `^2.0.0b2` に更新
+   - 学習: プレリリースパッケージは依存関係を厳密に確認する必要がある
 
-- **環境変数テンプレート** (`.env.example`)
-  - Microsoft Foundry 接続設定
-  - Phase 1 では Morningstar を Foundry Tool Catalog から利用
+2. **ファイル破損の問題**:
+   - 問題: `src/stock_magi/agents/melchior_agent.py` で `create_melchior_agent()` 関数が重複定義
+   - 原因: Phase 1 の実装（`foundry_tool` パラメータ）と Phase 1.5 の実装（`project_endpoint` パラメータ）が混在
+   - 具体的な破損内容:
+     ```python
+     def create_melchior_agent(foundry_tool: Any) -> MelchiorAgent:
+         """docstring 途中で切れる"""
+     def create_melchior_agent(foundry_tool: Any = None, project_endpoint: Optional[str] = None) -> MelchiorAgent:
+         """完全な docstring"""
+         return MelchiorAgent(project_endpoint=project_endpoint)
+     ```
+   - 対策: `git checkout HEAD` で Phase 1 の正常な状態に復元
+   - 学習: 大規模なリファクタリングは段階的に実施し、各ステップでテストを実行すべき
 
-##### 2. 共通基盤モジュール (`src/common/`) - 汎用再利用可能コンポーネント
+3. **API 互換性の維持失敗**:
+   - 問題: `MelchiorAgent.__init__()` のシグネチャ変更（`foundry_tool` → `project_endpoint`）により、既存の API (`endpoints.py`) が動作しなくなった
+   - 対策: Phase 1 実装を維持し、Phase 1.5 実装は別ブランチで慎重に進めることに方針変更
+   - 学習: 既存の API 互換性を保ちながらリファクタリングする必要がある（Factory パターンの更新など）
 
-**設計哲学**: ドメイン非依存な基盤を構築し、株式以外のドメイン (不動産、医療など) にも流用可能
+**プロジェクト整理**:
+- `cc-sdd/` フォルダを Git 管理から除外
+  - 理由: Spec-Driven Development ツールであり、このプロジェクト本体には不要
+  - 操作: `git rm --cached -r cc-sdd` でインデックスから削除、`.gitignore` に追加
+  - フォルダ自体はユーザーが手動で別の場所に移動
 
-- **合議エンジン** (`src/common/consensus/`)
-  - `ReusableConsensusOrchestrator`: GroupChat 型マルチエージェント合議
-  - `VotingStrategy`: 投票戦略抽象化 (Phase 1: 多数決、Phase 2: 加重投票)
-  - Agent Framework の GroupChatOrchestrator をラップ
+**`.gitignore` 改善**:
+- Python 固有の除外パターンを追加:
+  - `__pycache__/`, `*.py[cod]`, `*$py.class`, `.coverage`, `poetry.lock`
+  - 理由: テスト実行やキャッシュファイルがリポジトリに混入するのを防ぐ
 
-- **MCP 統合** (`src/common/mcp/`)
-  - `FoundryToolRegistry`: Foundry Tool Catalog 統一管理
-  - Phase 1: Morningstar (GUI ベース設定)
-  - Phase 2: Yahoo Finance (npm MCP Server)
-  - Phase 3: DuckDB 対応予定
+**テスト結果**:
+- Phase 1 MVP: 全 37 テスト合格 ✅
+- カバレッジ: 95%（主要機能は Phase 1 完成）
+- Phase 1.5 実装は一時中断、システムは安定状態
 
-- **共通データモデル** (`src/common/models/`)
-  - `Action`: BUY/SELL/HOLD 判定 (Enum)
-  - `AgentVote`: エージェント個別投票 (Pydantic モデル)
-  - `FinalDecision`: 合議結果 (信頼度、対立検出含む)
-  - Pydantic によるバリデーション (confidence 0.0-1.0、reasoning 最低文字数)
+**残件**:
+- Task 7.1: Agent Framework への移行（Phase 1.5）
+  - 現在: Phase 1 のモック実装で動作中
+  - 次回: 別ブランチで慎重に実装し、既存 API との互換性を確保する
+  - アプローチ案:
+    - Factory 関数でパラメータを柔軟に処理（`foundry_tool` と `project_endpoint` の両方をサポート）
+    - `MelchiorAgent.__init__()` を両方のパラメータを受け取れるように設計
+    - 段階的移行（まず内部実装を変更、次に外部 API を更新）
 
-##### 3. 株式ドメイン実装 (`src/stock_magi/`)
-
-- **Melchior エージェント** (`src/stock_magi/agents/melchior_agent.py`)
-  - ファンダメンタルズ分析専門エージェント
-  - Phase 1: モック実装 (HOLD + confidence 0.5)
-  - Phase 2: Agent Framework 完全統合予定
-
-- **プロンプト定義** (`src/stock_magi/prompts/stock_analysis_prompts.py`)
-  - `MELCHIOR_SYSTEM_MESSAGE`: エージェントペルソナ定義
-  - `create_melchior_analysis_prompt()`: 分析プロンプト生成
-  - Phase 2: Balthasar (テクニカル), Casper (センチメント) 追加予定
-
-- **FastAPI エンドポイント** (`src/stock_magi/api/endpoints.py`)
-  - `POST /api/analyze`: 銘柄分析エンドポイント
-  - `GET /api/health`: ヘルスチェック
-  - Pydantic モデルによるリクエスト/レスポンス検証
-  - 自動 OpenAPI (Swagger) ドキュメント生成
-
-- **アプリケーションエントリーポイント** (`src/main.py`)
-  - FastAPI アプリケーション初期化
-  - CORS ミドルウェア設定
-  - Lifespan イベント (起動/終了処理)
-  - ルートエンドポイント (API 情報提供)
-
-##### 4. 包括的テストスイート (`tests/`)
-
-**TDD アプローチによる高品質保証**
-
-- **共通基盤テスト**
-  - `test_decision_models.py`: Pydantic モデルバリデーション (8 テスト)
-  - `test_foundry_tool_registry.py`: MCP ツール管理 (8 テスト)
-  - `test_consensus_orchestrator.py`: 合議ロジック (7 テスト)
-
-- **ドメイン固有テスト**
-  - `test_melchior_agent.py`: Melchior エージェント統合テスト (5 テスト)
-
-- **E2E テスト**
-  - `test_api_endpoints.py`: FastAPI エンドポイント (9 テスト)
-  - 正常系・異常系・バリデーションエラーを網羅
-
-**テストカバレッジ**: pytest + pytest-asyncio + unittest.mock で実装
-
-##### 5. ドキュメント
-
-- **開発コンテキスト** (`docs/CONTEXT.md`)
-  - アーキテクチャ決定事項
-  - Agent Framework プレリリース版の注意事項
-  - データソース戦略 (Phase 1-3)
-  - DevContainer 開始手順
-
-- **MVP セットアップガイド** (`docs/MVP_SETUP.md`)
-  - Foundry Portal セットアップ (20 分)
-  - Morningstar Tool Catalog 設定 (2 分)
-  - DevContainer/Docker Compose/ローカル Python の 3 パターン
-  - トラブルシューティング
-
-- **技術仕様書** (`.kiro/specs/stock-magi-system-ja/`)
-  - `requirements.md`: 機能要件・非機能要件 (10 カテゴリ)
-  - `design.md`: アーキテクチャ設計 (20,000 行)
-  - `research.md`: 技術調査結果とトレードオフ分析 (24,000 行)
-  - `tasks.md`: 実装タスクリスト (Phase 1-3, 10,000 行)
-
-##### 6. MCP サーバー設定
-
-- **MCP 設定ファイル** (`config/mcp_servers.json`)
-  - Phase 1: Morningstar (Foundry Tool Catalog - GUI 設定のみ)
-  - Phase 2: Yahoo Finance (npm MCP Server - 定義済み)
-  - 将来拡張用の構造化設定
-
-### Changed (変更)
-
-- **言語選択の変更**: TypeScript → Python 3.11+
-  - 理由: Agent Framework の Python 実装が最新機能豊富
-  - ARM64 互換性: DevContainer で解決
-
-### Technical Highlights (技術的ハイライト)
-
-#### コード削減効果
-- **従来のアプローチ** (フルスクラッチ Hexagonal Architecture): ~1,500 行
-- **Agent Framework 活用**: ~500 行 (共通基盤 200 行 + ドメイン 150 行 + API 100 行 + テスト 150 行)
-- **削減率**: **約 70%**
-
-#### 再利用性設計
-- `src/common/` は完全にドメイン非依存
-- 他ドメインへの流用例:
-  - 不動産分析: `src/real_estate/agents/` 追加のみ
-  - 医療診断: `src/medical/agents/` 追加のみ
-
-#### Agent Framework プレリリース版リスク軽減策
-- バージョン固定: `agent-framework-azure-ai = "1.0.0b251223"`
-- Microsoft Foundry Portal (https://ai.azure.com/) で GUI ベース管理
-- DevUI によるエージェント動作ビジュアルデバッグ
-
-#### データソース戦略
-- **Phase 1 (MVP)**: Morningstar (Foundry Tool Catalog - PER/PBR/ROE など財務指標)
-- **Phase 2**: Yahoo Finance (npm MCP Server - 株価チャート、リアルタイムデータ)
-- **Phase 3**: DuckDB + Jquants API (時系列データ管理)
-
-### Development Workflow (開発ワークフロー)
-
-#### セットアップ時間
-- **手動作業**: 25-30 分 (Foundry Portal セットアップ 20 分 + 環境変数 5 分)
-- **自動作業**: 5-10 分 (DevContainer ビルド)
-
-#### テスト実行
-```bash
-poetry run pytest tests/ -v --cov=src --cov-report=html
-```
-
-#### ローカル起動
-```bash
-poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-#### Docker 起動
-```bash
-docker compose up --build
-```
-
-### Next Steps (次のステップ)
-
-#### Phase 2: Multi-Agent System (Week 3)
-- Balthasar エージェント (バランス型分析)
-- Casper エージェント (テクニカル分析)
-- 加重投票ロジック
-- Yahoo Finance MCP Server 統合
-
-#### Phase 3: Azure Deployment (Week 4)
-- Azure Container Apps デプロイ (Bicep)
-- DuckDB 統合 (Jquants API)
-- GitHub Actions CI/CD
-
-### Educational Value (教育的価値)
-
-このプロジェクトで学べること:
-1. **Microsoft Agent Framework**: マルチエージェント合議の実装パターン
-2. **MCP Protocol**: MCP サーバーの統合方法
-3. **Microsoft Foundry**: LLM モデルの管理とデプロイ
-4. **Reusable Architecture**: ドメイン非依存な基盤設計
-5. **Python + FastAPI**: 非同期 API 開発
-
-### Breaking Changes (破壊的変更)
-
-なし (初回リリース)
-
-### Deprecated (非推奨)
-
-なし (初回リリース)
-
-### Removed (削除)
-
-なし (初回リリース)
-
-### Fixed (修正)
-
-なし (初回リリース)
-
-### Security (セキュリティ)
-
-- 環境変数による機密情報管理 (`.env.example` 提供)
-- Docker 非 root ユーザー実行
-- Phase 2 で Azure Key Vault 統合予定
+**TypeScript 開発者への注意**:
+- Python の `Optional[str]` は TypeScript の `string | null | undefined` に相当
+- Poetry は npm/yarn に相当するパッケージマネージャー
+- `pyproject.toml` は `package.json` に相当（依存関係管理）
+- `azure-ai-projects` は Azure SDK for JavaScript の Python 版
 
 ---
-
-## [Unreleased] (旧エントリ保持)
 
 ### Added (追加)
 

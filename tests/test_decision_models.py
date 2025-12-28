@@ -39,9 +39,8 @@ def test_agent_vote_confidence_range():
     )
     assert vote.confidence == 0.5
     
-    # 範囲外 (0.0 未満) - Pydantic v2 では ValidationError
-    from pydantic import ValidationError
-    with pytest.raises(ValidationError, match="greater than or equal to 0"):
+    # 範囲外 (0.0 未満)
+    with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
@@ -50,7 +49,7 @@ def test_agent_vote_confidence_range():
         )
     
     # 範囲外 (1.0 超過)
-    with pytest.raises(ValidationError, match="less than or equal to 1"):
+    with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
@@ -61,8 +60,7 @@ def test_agent_vote_confidence_range():
 
 def test_agent_vote_reasoning_min_length():
     """AgentVote の reasoning 最小文字数チェック"""
-    from pydantic import ValidationError
-    with pytest.raises(ValidationError, match="at least 10 characters"):
+    with pytest.raises(ValueError, match="Reasoning must be at least 10 characters"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
@@ -104,7 +102,6 @@ def test_final_decision_valid():
 
 def test_final_decision_summary_min_length():
     """FinalDecision の summary 最小文字数チェック"""
-    from pydantic import ValidationError
     votes = [
         AgentVote(
             agent_name="Melchior",
@@ -114,7 +111,7 @@ def test_final_decision_summary_min_length():
         )
     ]
     
-    with pytest.raises(ValidationError, match="at least 20 characters"):
+    with pytest.raises(ValueError, match="Summary must be at least 20 characters"):
         FinalDecision(
             final_action=Action.HOLD,
             votes=votes,
@@ -125,8 +122,7 @@ def test_final_decision_summary_min_length():
 
 def test_final_decision_empty_votes():
     """FinalDecision の votes 空リストチェック"""
-    from pydantic import ValidationError
-    with pytest.raises(ValidationError, match="at least 1 item"):
+    with pytest.raises(ValueError, match="Votes list cannot be empty"):
         FinalDecision(
             final_action=Action.HOLD,
             votes=[],
