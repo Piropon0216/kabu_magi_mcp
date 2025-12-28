@@ -1,68 +1,151 @@
 # Changelog
 
-このファイルは、Stock MAGI Systemのすべての重要な変更を記録します。
+このプロジェクトのすべての重要な変更は、このファイルに記録されます。
 
-フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づいており、
-このプロジェクトは [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
+形式は[Keep a Changelog](https://keepachangelog.com/ja/1.0.0/)に基づいており、
+このプロジェクトは[セマンティック バージョニング](https://semver.org/lang/ja/)に準拠しています。
 
-## [Unreleased]
-
-### 追加（Added）
-- プロジェクト初期セットアップ
-- Kiro Spec-Driven Development環境構築
-- Steering設定ファイル作成（product.md, tech.md, structure.md）
-  - MVP戦略の定義
-  - TypeScript技術スタック決定（Copilot+ PC ARM64互換性のため）
-  - Azure + Azure OpenAI統合方針
-  - Hexagonal Architectureパターン採用
-  - TDD必須（カバレッジ80%以上）
-- 要件定義書作成（stock-magi-system-ja）
-  - 10個の主要要件定義
-  - MVP Phase 1/2/3のフェーズ戦略
-  - エージェント拡張性の確保（N個対応）
-  - DuckDB統合をPhase 3 Pendingに設定
-- Gitリポジトリ初期化
-- プロジェクト基本ファイル作成
-  - README.md: プロジェクト概要・セットアップ手順
-  - CHANGELOG.md: 変更履歴管理
-  - .gitignore: Git管理除外設定
-
-### 技術的決定（Technical Decisions）
-- **言語選択**: TypeScript 5.x
-  - 理由: Copilot+ PC (ARM64)でのPythonライブラリ互換性問題を回避
-  - 配慮: Python開発者向けに丁寧なコメント・ドキュメント
-- **アーキテクチャ**: Hexagonal Architecture (Ports & Adapters)
-  - 理由: エージェントプラグイン機構との親和性、テスト容易性
-- **クラウド**: Microsoft Azure
-  - 理由: MicrosoftFoundry活用、Azure OpenAI統合
-- **LLM**: Azure OpenAI Service (Primary)
-  - Future: ローカルLLM対応も視野（抽象レイヤー設計）
-- **MCP統合**: Model Context Protocol採用
-  - Phase 1: 基本MCPクライアント
-  - Phase 2: Azure/AWSナレッジベース統合
-  - Phase 3: DuckDB統合（Pending）
-
-### 開発方針（Development Principles）
-- **MVP第一**: 小さく始めて段階的に機能追加
-- **TDD必須**: テストファーストアプローチ、カバレッジ80%以上
-- **ドキュメント重視**: CHANGELOG、README、コメントの徹底
-- **Git管理**: Conventional Commits、ブランチ戦略（main/develop/feature/*）
-
-## [0.0.0] - 2025-12-28
-
-### 追加
-- プロジェクト開始
-- 初期リポジトリ構成
+## Python開発者向け注意
+各エントリには詳細な説明と、TypeScript特有の実装について補足説明を含めています。
 
 ---
 
-## 凡例
+## [Unreleased]
 
-- **追加（Added）**: 新機能の追加
-- **変更（Changed）**: 既存機能の変更
-- **非推奨（Deprecated）**: 近い将来削除予定の機能
-- **削除（Removed）**: 削除された機能
-- **修正（Fixed）**: バグ修正
-- **セキュリティ（Security）**: セキュリティ関連の変更
-- **技術的決定（Technical Decisions）**: 重要な技術選択の記録
-- **開発方針（Development Principles）**: 開発プロセス・方針の決定
+### Added (追加)
+
+#### プロジェクト初期化 - 2025-12-28
+
+**概要**: Stock MAGI Systemプロジェクトの基本構造を確立
+
+**追加されたファイル**:
+- `.kiro/steering/product.md`: プロダクトビジョン、MVP戦略、開発方針
+- `.kiro/steering/tech.md`: 技術スタック、アーキテクチャパターン、TypeScript規約
+- `.kiro/steering/structure.md`: ディレクトリ構成、命名規則、Git管理方針
+- `README.md`: プロジェクト概要とセットアップ手順
+- `CHANGELOG.md`: 変更履歴（このファイル）
+
+**技術的決定**:
+
+1. **言語選択: TypeScript**
+   - 理由: Copilot+ PC (ARM64)でのPythonライブラリ互換性問題を回避
+   - Pythonとの違い: 静的型付け、コンパイル必要、`any`型使用禁止
+   - Python開発者への配慮: 詳細なコメント、TypeScriptガイド作成予定
+
+2. **クラウドプラットフォーム: Azure**
+   - 理由: Microsoft Foundry統合、Azure OpenAI利用
+   - 主要サービス:
+     - Azure Functions: サーバーレス実行（Pythonの`azure.functions`に相当）
+     - Azure OpenAI: LLM推論（Pythonの`openai`パッケージに相当）
+     - Azure Storage: データ永続化（Pythonの`azure-storage-blob`に相当）
+
+3. **アーキテクチャパターン: ヘキサゴナル（Ports & Adapters）**
+   - コアドメイン: ビジネスロジック（エージェント、合議）
+   - ポート: インターフェース定義（Pythonの`Protocol`や抽象基底クラスに相当）
+   - アダプター: 外部システム統合（Pythonのアダプターパターンと同様）
+   - メリット: テスト容易性、拡張性、依存関係の明確化
+
+4. **プラグインアーキテクチャ**
+   - エージェントレジストリ: 動的登録（Pythonの`importlib`に似た概念）
+   - MCPコネクタ: プラグイン方式（Pythonのパッケージエントリーポイントに相当）
+
+5. **テスト戦略: TDD + 80%カバレッジ**
+   - フレームワーク: Vitest（Pythonの`pytest`に相当）
+   - カバレッジ: c8（Pythonの`coverage.py`に相当）
+   - モック: MSW（Pythonの`unittest.mock`や`responses`に相当）
+
+**Git管理**:
+- 新しいリポジトリを初期化
+- ブランチ戦略: Git Flow（main, develop, feature/*, hotfix/*）
+- コミット規約: Conventional Commits
+
+**次のステップ**:
+1. 基本的なTypeScriptプロジェクトセットアップ（`package.json`, `tsconfig.json`）
+2. ディレクトリ構造作成（`src/core/`, `src/adapters/`, etc.）
+3. 型定義ファイル作成（`src/core/models/`）
+4. エージェント基底インターフェース実装
+5. 最初のユニットテスト作成
+
+**Python開発者向け補足**:
+- TypeScriptは型定義が必須です。すべての変数、関数の引数、戻り値に型を指定します
+- `any`型は使用禁止（Pythonの動的型付けに相当しますが、型安全性を損なうため）
+- インターフェース（`interface`）はPythonの`Protocol`や抽象基底クラスに似ています
+- ヘキサゴナルアーキテクチャは、Pythonでもよく使われるクリーンアーキテクチャの一種です
+
+**影響範囲**:
+- 新規プロジェクトのため、既存コードへの影響なし
+- 今後のすべての開発は、このSteering定義に従う
+
+**参考リンク**:
+- [TypeScript公式ドキュメント](https://www.typescriptlang.org/docs/)
+- [ヘキサゴナルアーキテクチャ](https://alistair.cockburn.us/hexagonal-architecture/)
+- [Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/)
+
+---
+
+## 変更履歴の記録方法
+
+### カテゴリ
+- **Added (追加)**: 新機能
+- **Changed (変更)**: 既存機能の変更
+- **Deprecated (非推奨)**: 将来削除予定の機能
+- **Removed (削除)**: 削除された機能
+- **Fixed (修正)**: バグ修正
+- **Security (セキュリティ)**: 脆弱性対応
+
+### エントリ形式
+
+各変更には以下を含める:
+1. **概要**: 何を変更したか（1-2行）
+2. **詳細**: なぜ変更したか、どのように実装したか
+3. **技術的決定**: TypeScript特有の実装方法
+4. **Python開発者向け補足**: Pythonとの対応関係
+5. **影響範囲**: どのコンポーネントが影響を受けるか
+6. **次のステップ**: 次に何をすべきか（該当する場合）
+
+### 例
+
+```markdown
+#### エージェントレジストリ実装 - 2025-12-28
+
+**概要**: 動的なエージェント登録・管理機能を実装
+
+**詳細**:
+- `AgentRegistry`クラスを作成
+- `register()`, `unregister()`, `getAll()`メソッド実装
+- ジェネリック型を使用して型安全性を確保
+
+**技術的決定**:
+- TypeScriptのMap型を使用（Pythonの`dict`に相当）
+- ジェネリック`<T extends Agent>`で型制約（Pythonの`TypeVar`に相当）
+
+**Python開発者向け補足**:
+```python
+# Python equivalent
+class AgentRegistry:
+    def __init__(self):
+        self._agents: Dict[str, Agent] = {}
+    
+    def register(self, name: str, agent: Agent) -> None:
+        self._agents[name] = agent
+```
+
+TypeScriptでは以下のように実装:
+```typescript
+class AgentRegistry {
+  private agents: Map<string, Agent> = new Map();
+  
+  register(name: string, agent: Agent): void {
+    this.agents.set(name, agent);
+  }
+}
+```
+
+**影響範囲**:
+- `src/core/agents/registry.ts`: 新規作成
+- `tests/unit/agents/registry.test.ts`: ユニットテスト追加
+
+**次のステップ**:
+1. エージェント基底インターフェース定義
+2. 短期トレーダーエージェント実装
+```
