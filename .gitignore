@@ -1,0 +1,63 @@
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# cc-sddは別リポジトリ
+cc-sdd/
+
+# 環境変数
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Azure
+local.settings.json
+.azure/
+.func/
+
+# テストカバレッジ
+coverage/
+.nyc_output/
+*.lcov
+
+# ビルド成果物
+*.js.map
+*.d.ts.map
+lib/
+lib-esm/
+
+# TypeScript
+*.tsbuildinfo
+
+# 一時ファイル
+tmp/
+temp/
+.cache/
