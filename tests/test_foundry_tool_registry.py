@@ -40,17 +40,17 @@ def test_get_tool_morningstar_phase1(mock_env_vars):
     
     tool = registry.get_tool("morningstar")
     
-    # Phase 1: プレースホルダーオブジェクトを返す
+    # Phase 1: プレースホルダーオブジェクト (dict) を返す
     assert tool is not None
-    assert hasattr(tool, "name")
-    assert tool.name == "morningstar"
+    assert isinstance(tool, dict)
+    assert tool["name"] == "morningstar"
 
 
 def test_get_tool_unknown(mock_env_vars):
     """存在しないツール名でのエラーテスト"""
     registry = FoundryToolRegistry()
     
-    with pytest.raises(ValueError, match="Tool 'unknown_tool' not found"):
+    with pytest.raises(ValueError, match="Unsupported tool: unknown_tool"):
         registry.get_tool("unknown_tool")
 
 
@@ -61,7 +61,8 @@ def test_get_tools_for_agent_melchior(mock_env_vars):
     tools = registry.get_tools_for_agent("Melchior")
     
     assert len(tools) == 1
-    assert tools[0].name == "morningstar"
+    assert isinstance(tools[0], dict)
+    assert tools[0]["name"] == "morningstar"
 
 
 def test_get_tools_for_agent_unknown(mock_env_vars):

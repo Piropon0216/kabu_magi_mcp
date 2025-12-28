@@ -34,12 +34,15 @@ async def test_consensus_orchestrator_single_agent():
 @pytest.mark.asyncio
 async def test_consensus_orchestrator_multiple_agents():
     """複数エージェントでの合議テスト"""
-    # モックエージェント作成
+    # モックエージェント作成 (name を文字列で設定)
     mock_agents = [
-        MagicMock(name="Melchior"),
-        MagicMock(name="Balthasar"),
-        MagicMock(name="Casper"),
+        MagicMock(),
+        MagicMock(),
+        MagicMock(),
     ]
+    mock_agents[0].name = "Melchior"
+    mock_agents[1].name = "Balthasar"
+    mock_agents[2].name = "Casper"
     
     orchestrator = ReusableConsensusOrchestrator(
         agents=mock_agents,
@@ -65,9 +68,9 @@ async def test_majority_voting_buy():
     )
     
     votes = [
-        AgentVote(agent_name="Melchior", action=Action.BUY, confidence=0.8, reasoning="ファンダメンタルズ良好"),
-        AgentVote(agent_name="Balthasar", action=Action.BUY, confidence=0.7, reasoning="上昇トレンド継続"),
-        AgentVote(agent_name="Casper", action=Action.SELL, confidence=0.6, reasoning="センチメント悪化"),
+        AgentVote(agent_name="Melchior", action=Action.BUY, confidence=0.8, reasoning="ファンダメンタルズが良好"),
+        AgentVote(agent_name="Balthasar", action=Action.BUY, confidence=0.7, reasoning="上昇トレンドが継続中"),
+        AgentVote(agent_name="Casper", action=Action.SELL, confidence=0.6, reasoning="センチメントが悪化中"),
     ]
     
     final_action = orchestrator._calculate_majority_vote(votes)
@@ -84,9 +87,9 @@ async def test_majority_voting_hold():
     )
     
     votes = [
-        AgentVote(agent_name="Melchior", action=Action.HOLD, confidence=0.5, reasoning="判断材料不足"),
-        AgentVote(agent_name="Balthasar", action=Action.HOLD, confidence=0.5, reasoning="トレンド不明瞭"),
-        AgentVote(agent_name="Casper", action=Action.BUY, confidence=0.6, reasoning="弱い買いシグナル"),
+        AgentVote(agent_name="Melchior", action=Action.HOLD, confidence=0.5, reasoning="判断材料が不足しています"),
+        AgentVote(agent_name="Balthasar", action=Action.HOLD, confidence=0.5, reasoning="トレンドが不明瞭です"),
+        AgentVote(agent_name="Casper", action=Action.BUY, confidence=0.6, reasoning="弱い買いシグナル検出"),
     ]
     
     final_action = orchestrator._calculate_majority_vote(votes)
