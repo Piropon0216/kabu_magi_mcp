@@ -6,7 +6,7 @@ a domain-agnostic consensus mechanism for multi-agent systems.
 """
 
 from typing import Any, Optional
-from ..models.decision_models import Action, AgentVote, FinalDecision
+from src.common.models.decision_models import Action, AgentVote, FinalDecision
 
 
 class ReusableConsensusOrchestrator:

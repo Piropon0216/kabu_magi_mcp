@@ -6,7 +6,7 @@ making it reusable across different domains (stock analysis, real estate, medica
 """
 
 from typing import Any, Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class FoundryConfig(BaseSettings):
@@ -19,14 +19,32 @@ class FoundryConfig(BaseSettings):
         FOUNDRY_DEPLOYMENT: モデルデプロイメント名
         FOUNDRY_API_VERSION: API バージョン
     """
-    foundry_endpoint: str
-    foundry_api_key: str
-    foundry_deployment: str = "gpt-4o"
-    foundry_api_version: str = "2024-10-01-preview"
+    FOUNDRY_ENDPOINT: str
+    FOUNDRY_API_KEY: str
+    FOUNDRY_DEPLOYMENT: str = "gpt-4o"
+    FOUNDRY_API_VERSION: str = "2024-10-01-preview"
     
-    class Config:
-        env_file = ".env"
-        env_prefix = "FOUNDRY_"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
+    
+    # 後方互換性のためのエイリアス
+    @property
+    def foundry_endpoint(self) -> str:
+        return self.FOUNDRY_ENDPOINT
+    
+    @property
+    def foundry_api_key(self) -> str:
+        return self.FOUNDRY_API_KEY
+    
+    @property
+    def foundry_deployment(self) -> str:
+        return self.FOUNDRY_DEPLOYMENT
+    
+    @property
+    def foundry_api_version(self) -> str:
+        return self.FOUNDRY_API_VERSION
 
 
 class FoundryToolRegistry:
