@@ -89,9 +89,17 @@ class MelchiorAgent:
             rec = market_data.get("recommendation") if isinstance(market_data, dict) else None
             if isinstance(rec, str):
                 if rec.lower() in ("buy", "strong_buy"):
-                    return {"action": "BUY", "confidence": 0.8, "reasoning": f"Foundry recommendation: {rec}"}
+                    return {
+                        "action": "BUY",
+                        "confidence": 0.8,
+                        "reasoning": f"Foundry recommendation: {rec}",
+                    }
                 if rec.lower() in ("sell", "strong_sell"):
-                    return {"action": "SELL", "confidence": 0.8, "reasoning": f"Foundry recommendation: {rec}"}
+                    return {
+                        "action": "SELL",
+                        "confidence": 0.8,
+                        "reasoning": f"Foundry recommendation: {rec}",
+                    }
 
             fair = market_data.get("fair_value")
             price = market_data.get("price")
@@ -103,7 +111,11 @@ class MelchiorAgent:
 
         # Fallback Phase 1 mock response
         _analysis_prompt = create_melchior_analysis_prompt(ticker, {"ticker": ticker})
-        return {"action": "HOLD", "confidence": 0.5, "reasoning": f"Phase 1 MVP - {ticker} のモック分析。"}
+        return {
+            "action": "HOLD",
+            "confidence": 0.5,
+            "reasoning": f"Phase 1 MVP - {ticker} のモック分析。",
+        }
 
 
 def create_melchior_agent(foundry_tool: Any) -> MelchiorAgent:

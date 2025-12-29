@@ -82,8 +82,19 @@ class ReusableConsensusOrchestrator:
                     try:
                         action_enum = Action(action_str)
                     except Exception:
-                        action_enum = Action(action_str.upper()) if isinstance(action_str, str) else Action.HOLD
-                    votes.append(AgentVote(agent_name=agent_name, action=action_enum, confidence=confidence, reasoning=reasoning))
+                        action_enum = (
+                            Action(action_str.upper())
+                            if isinstance(action_str, str)
+                            else Action.HOLD
+                        )
+                    votes.append(
+                        AgentVote(
+                            agent_name=agent_name,
+                            action=action_enum,
+                            confidence=confidence,
+                            reasoning=reasoning,
+                        )
+                    )
                     continue
 
             # If agent exposes async `analyze`, call it and parse the result
@@ -92,7 +103,9 @@ class ReusableConsensusOrchestrator:
                     result = await agent.analyze(input_context.get("ticker", ""))
                     # Expect result to be a dict like {"action": "BUY", "confidence": 0.8, "reasoning": "..."}
                     action_str = result.get("action") if isinstance(result, dict) else None
-                    confidence = float(result.get("confidence", 0.5)) if isinstance(result, dict) else 0.5
+                    confidence = (
+                        float(result.get("confidence", 0.5)) if isinstance(result, dict) else 0.5
+                    )
                     reasoning = result.get("reasoning", "") if isinstance(result, dict) else ""
 
                     if isinstance(action_str, str):
@@ -100,16 +113,32 @@ class ReusableConsensusOrchestrator:
                             action_enum = Action(action_str)
                         except Exception:
                             # Upper-case mapping fallback
-                            action_enum = Action(action_str.upper()) if isinstance(action_str, str) else Action.HOLD
+                            action_enum = (
+                                Action(action_str.upper())
+                                if isinstance(action_str, str)
+                                else Action.HOLD
+                            )
                     else:
                         action_enum = Action.HOLD
 
-                    vote = AgentVote(agent_name=agent_name, action=action_enum, confidence=confidence, reasoning=reasoning)
+                    vote = AgentVote(
+                        agent_name=agent_name,
+                        action=action_enum,
+                        confidence=confidence,
+                        reasoning=reasoning,
+                    )
                     votes.append(vote)
                     continue
                 except Exception:
                     # On agent error, append a neutral HOLD vote
-                    votes.append(AgentVote(agent_name=agent_name, action=Action.HOLD, confidence=0.0, reasoning="agent error"))
+                    votes.append(
+                        AgentVote(
+                            agent_name=agent_name,
+                            action=Action.HOLD,
+                            confidence=0.0,
+                            reasoning="agent error",
+                        )
+                    )
 
             # Fallback mock vote
             votes.append(

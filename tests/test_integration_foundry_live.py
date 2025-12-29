@@ -12,12 +12,12 @@ or locally by a developer with valid credentials. Marked with pytest marker `int
 """
 
 import os
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.main import app
 from src.common.mcp import FoundryToolRegistry
-
+from src.main import app
 
 REQUIRED = ["FOUNDRY_ENDPOINT", "FOUNDRY_API_KEY", "FOUNDRY_DEPLOYMENT", "FOUNDRY_API_VERSION"]
 

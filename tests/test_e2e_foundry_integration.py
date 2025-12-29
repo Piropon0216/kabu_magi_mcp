@@ -33,12 +33,16 @@ async def test_e2e_foundry_buy_path(monkeypatch, client):
     def _get_tool(self, name: str):
         tool = original_get_tool(self, name)
         # monkeypatch the instance method
-        monkeypatch.setattr(tool, "get_fundamentals", fake_get_fundamentals.__get__(tool, type(tool)))
+        monkeypatch.setattr(
+            tool, "get_fundamentals", fake_get_fundamentals.__get__(tool, type(tool))
+        )
         return tool
 
     monkeypatch.setattr(FoundryToolRegistry, "get_tool", _get_tool)
 
-    response = await client.post("/api/analyze", json={"ticker": "7203.T", "include_reasoning": True})
+    response = await client.post(
+        "/api/analyze", json={"ticker": "7203.T", "include_reasoning": True}
+    )
     assert response.status_code == 200
     data = response.json()
 
@@ -57,7 +61,9 @@ async def test_e2e_foundry_sell_path(monkeypatch, client):
 
     def _get_tool(self, name: str):
         tool = original_get_tool(self, name)
-        monkeypatch.setattr(tool, "get_fundamentals", fake_get_fundamentals.__get__(tool, type(tool)))
+        monkeypatch.setattr(
+            tool, "get_fundamentals", fake_get_fundamentals.__get__(tool, type(tool))
+        )
         return tool
 
     monkeypatch.setattr(FoundryToolRegistry, "get_tool", _get_tool)
