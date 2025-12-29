@@ -127,7 +127,7 @@ async def test_voting_strategy_majority():
 async def test_voting_strategy_weighted_placeholder():
     """
     投票戦略: weighted (Phase 2 実装予定)
-    
+
     Phase 1: パラメータのみ受け入れ可能
     Phase 2: 加重投票ロジック実装
     """

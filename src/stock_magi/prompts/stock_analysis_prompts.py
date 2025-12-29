@@ -40,11 +40,11 @@ Reasoning: 具体的な指標を引用した根拠 (最低50文字)
 def create_melchior_analysis_prompt(ticker: str, market_data: dict) -> str:
     """
     Melchior 用の分析プロンプトを生成
-    
+
     Args:
         ticker: 銘柄コード (例: "7203.T")
         market_data: Morningstar から取得した市場データ
-    
+
     Returns:
         分析用プロンプト文字列
     """

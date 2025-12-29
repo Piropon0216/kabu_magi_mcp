@@ -36,23 +36,23 @@ class AnalyzeResponse(BaseModel):
 async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
     """
     銘柄を分析し、投資判断を返す
-    
+
     Phase 1 実装:
         - Melchior エージェントのみ (単一エージェント)
         - Morningstar tool (Foundry Tool Catalog)
         - モック投票による合議
-    
+
     Phase 2 拡張予定:
         - Balthasar, Casper エージェント追加
         - 実際の Agent Framework 統合
         - 加重投票
-    
+
     Args:
         request: 分析リクエスト
-    
+
     Returns:
         分析結果 (FinalDecision)
-    
+
     Raises:
         HTTPException: 分析失敗時
     """
@@ -111,7 +111,7 @@ async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
 async def health_check():
     """
     ヘルスチェックエンドポイント
-    
+
     Returns:
         {"status": "ok"}
     """

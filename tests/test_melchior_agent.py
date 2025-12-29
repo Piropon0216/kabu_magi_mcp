@@ -46,7 +46,7 @@ async def test_melchior_agent_analyze():
 async def test_melchior_agent_analyze_phase1_mock():
     """
     Phase 1: モック実装のテスト
-    
+
     Phase 2: 実際の Agent Framework 統合後に更新
     """
     mock_tool = MagicMock()

@@ -15,12 +15,12 @@ from ..prompts.stock_analysis_prompts import (
 class MelchiorAgent:
     """
     Melchior エージェント - ファンダメンタルズ分析専門
-    
+
     Phase 1 実装:
         - Agent Framework の Agent クラスをラップ
         - Morningstar tool (Foundry Tool Catalog) を使用
         - BUY/SELL/HOLD 判定を返す
-    
+
     Phase 2 拡張予定:
         - Agent Framework の完全な Agent 実装
         - Tool calling の自動実行
@@ -30,10 +30,10 @@ class MelchiorAgent:
     def __init__(self, foundry_tool: Any):
         """
         Initialize Melchior agent
-        
+
         Args:
             foundry_tool: Foundry Tool Catalog から取得した Morningstar tool
-        
+
         Phase 1: モック実装
         Phase 2: Agent Framework の Agent クラスで実装
         """
@@ -52,22 +52,22 @@ class MelchiorAgent:
     async def analyze(self, ticker: str) -> dict[str, Any]:
         """
         銘柄を分析し、投資判断を返す
-        
+
         Args:
             ticker: 銘柄コード (例: "7203.T")
-        
+
         Returns:
             {
                 "action": "BUY/SELL/HOLD",
                 "confidence": 0.0-1.0,
                 "reasoning": "分析根拠"
             }
-        
+
         Phase 1 実装:
             1. Morningstar tool で市場データ取得 (モック)
             2. プロンプト生成
             3. 投資判断を返す (Phase 1: 固定値)
-        
+
         Phase 2 拡張:
             - Agent Framework の Agent.run() で自動実行
             - Tool calling で実際の Morningstar データ取得
@@ -99,13 +99,13 @@ class MelchiorAgent:
 def create_melchior_agent(foundry_tool: Any) -> MelchiorAgent:
     """
     Melchior エージェントを作成 (Factory function)
-    
+
     Args:
         foundry_tool: Foundry Tool Catalog から取得した Morningstar tool
-    
+
     Returns:
         MelchiorAgent インスタンス
-    
+
     使用例:
         >>> from src.common.mcp import FoundryToolRegistry
         >>> registry = FoundryToolRegistry()

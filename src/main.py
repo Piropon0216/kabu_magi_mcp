@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     FastAPI lifespan イベント
-    
+
     起動時: ロギング、初期化処理
     終了時: クリーンアップ処理
     """
@@ -68,7 +68,7 @@ app.include_router(router)
 async def root():
     """
     ルートエンドポイント
-    
+
     Returns:
         API 情報
     """

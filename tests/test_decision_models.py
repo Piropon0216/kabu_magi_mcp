@@ -139,7 +139,7 @@ def test_final_decision_empty_votes():
 def test_final_decision_conflict_detection_placeholder():
     """
     FinalDecision の has_conflict フラグテスト
-    
+
     Phase 1: 手動設定
     Phase 2: 自動検出実装予定
     """

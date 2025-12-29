@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 class Action(str, Enum):
     """
     投資判断のアクション
-    
+
     他ドメインへの流用例:
       - 不動産分析: BUY (購入), HOLD (保留), SELL (売却)
       - 医療診断: POSITIVE (陽性), NEGATIVE (陰性), UNCERTAIN (不明)
@@ -27,7 +27,7 @@ class Action(str, Enum):
 class AgentVote(BaseModel):
     """
     エージェント1つの投票結果
-    
+
     Attributes:
         agent_name: エージェント名 (例: "Melchior", "Balthasar", "Casper")
         action: 推奨アクション
@@ -51,7 +51,7 @@ class AgentVote(BaseModel):
 class FinalDecision(BaseModel):
     """
     最終的な合議結果
-    
+
     Attributes:
         final_action: 合議による最終アクション
         votes: 各エージェントの投票結果
