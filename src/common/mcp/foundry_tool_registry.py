@@ -6,6 +6,7 @@ making it reusable across different domains (stock analysis, real estate, medica
 """
 
 from typing import Any
+from types import SimpleNamespace
 
 from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
@@ -84,18 +85,15 @@ class FoundryToolRegistry:
         supported_tools = ["morningstar"]  # Phase 1 MVP
 
         if tool_name not in supported_tools:
-            raise ValueError(
-                f"Unsupported tool: {tool_name}. "
-                f"Supported tools in Phase 1: {', '.join(supported_tools)}"
-            )
+            raise ValueError(f"Tool '{tool_name}' not found")
 
         # Phase 2 で Azure SDK による実際の Tool 取得ロジックを実装予定
         # 現在は Foundry Portal での GUI 設定に依存
-        tool_placeholder = {
-            "name": tool_name,
-            "description": f"{tool_name.capitalize()} tool from Foundry Catalog",
-            "phase": "1-mvp",
-        }
+        tool_placeholder = SimpleNamespace(
+            name=tool_name,
+            description=f"{tool_name.capitalize()} tool from Foundry Catalog",
+            phase="1-mvp",
+        )
 
         self._tool_cache[tool_name] = tool_placeholder
         return tool_placeholder

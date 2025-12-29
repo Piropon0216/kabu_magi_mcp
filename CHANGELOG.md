@@ -1,10 +1,72 @@
+## Changelog
+
+このプロジェクトの重要な変更はここに記録します。
+形式は Keep a Changelog に準拠し、リリース見出しには参照可能な短いコミットハッシュを併記してトレースできるようにします。
+
+## [Unreleased]
+
+### Uncommitted changes (work-in-progress)
+- `src/stock_magi/api/endpoints.py`: API endpoint adjustments and exception-chaining fixes. (uncommitted)
+- `tests/test_foundry_tool_registry.py`: test updates aligning with Pydantic v2 changes. (uncommitted)
+
+注: 上記はワーキングツリーにある未コミットの変更を短く記録したものです。コミット後、各エントリに代表的な短いコミットハッシュを追記します。ハッシュが増えた場合は、セマンティックバージョニング（マイナーバージョン）を適切に増やして管理してください。
+
+## [0.1.1] - 2025-12-29 (trace: f0c8a8d, e18cfb1, 05601a9)
+
+### Added
+- `infra/runner` の systemd スクリプトとコンテナ化サンプルを追加（セルフホスト runner 用）。
+- ローカル開発用の Git フック（`.githooks/pre-commit`, `.githooks/pre-push`）およびスモーク/フルテストスクリプトを追加。
+
+### Changed
+- コードスタイルと型注釈を `ruff` に合わせて整備し、自動修正・手動修正を適用（自動修正 ≒100件 + 手動修正）。
+- `src/common/mcp/foundry_tool_registry.py` を含む Pydantic v2 対応の調整を反映。
+
+### Fixed
+- Pydantic v2 移行に伴う環境変数/設定読み込みの不整合を修正（`model_config` の調整、`Field(..., alias=...)` の適用）。
+- `ruff` に起因する多数のスタイル問題を解消し、`ruff check .` が通過する状態にしました。
+
+### Chore
+- 依存ロックファイルを更新（`poetry lock` → `poetry.lock` を更新・コミット）。
+
+### Test
+- スモークテストとフルテストを実行し、既存のテストはすべて合格（37 tests passed）。
+
+---
+
+## [0.1.0] - 2025-12-28 (trace: 772d4a6, e05b888, c0582cd)
+
+### Added
+- プロジェクト初期化と Steering 設定（初期コミット含む）。
+- 汎用マルチエージェント基盤モジュールと株式ドメイン（Melchior エージェント + FastAPI）を初期実装。
+
+### Changed
+- セマンティックバージョニングと Keep a Changelog 形式の運用を明文化。
+
+### Fixed
+- Pydantic v2 対応と環境変数読み込み修正（初期移行対応）。
+
+### Test
+- Phase 1 MVP: 基本テストスイートを整備・合格。
+
+---
+
+## Notes / Trial & Error (short summary)
+
+- 作業中は Pydantic v2 の env 設定、`ruff` によるスタイル指摘、ローカル git フックによる push ブロック、`poetry.lock` の更新が主要な作業点でした。上記の trace ハッシュを使えば、どのコミットでどの修正が行われたか辿れます。
+
+---
+
+（追記ルール）
+- 変更履歴は原則「追記のみ」とし、過去エントリは編集しない運用を推奨します。必要なら各エントリに短い trace ハッシュを併記してください。
 ````markdown
 ### 試行錯誤・運用履歴
-- Pydantic v2系移行時、`ConfigDict`/`BaseSettings`の環境変数prefixやenv_fileの適用順序でバリデーションエラー多発 → `model_config`構文で安定化。
-- MelchiorAgent のファクトリ関数が Phase 1 / 1.5 の混在で重複・破損したため復元と段階的リファクタリングに移行。
-- API シグネチャ変更による互換性確保のため、新機能は別ブランチで開発。
-- Spec-Driven Development 用サブモジュール（cc-sdd/）が混入したため `.gitignore` と `git rm --cached` で除外。
-- 変更履歴は「追記のみ」運用：過去分は編集せず、追記で履歴を残す。
+- Pydantic v2系移行時、`ConfigDict`/`BaseSettings`の環境変数prefixやenv_fileの適用順序でバリデーションエラー多発 → `model_config`構文で安定化。 (trace: dc06b65)
+- MelchiorAgent のファクトリ関数が Phase 1 / 1.5 の混在で重複・破損したため復元と段階的リファクタリングに移行。 (trace: ca77c4c)
+- API シグネチャ変更による互換性確保のため、新機能は別ブランチで開発。 (trace: 772d4a6)
+- Spec-Driven Development 用サブモジュール（cc-sdd/）が混入したため `.gitignore` と `git rm --cached` で除外。 (trace: 3c95275)
+- 変更履歴は「追記のみ」運用：過去分は編集せず、追記で履歴を残す。 (trace: 54b1100)
+
+注記: 上記は代表的な変更に紐づく短いコミットハッシュを併記しています。重複する説明が複数エントリにある場合、それらが同一のコミットハッシュを参照しているときは「マージ可能」とみなせます。具体的なマージはユーザ側で手動対応してください（例: 同一ハッシュは同一変更の重複記録であるため統合して差し支えありません）。
 
 ---
 # Changelog

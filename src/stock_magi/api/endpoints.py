@@ -4,7 +4,6 @@ FastAPI endpoints for Stock MAGI system.
 POST /api/analyze - 銘柄分析エンドポイント
 """
 
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
