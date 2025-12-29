@@ -7,6 +7,7 @@ making it reusable across different domains (stock analysis, real estate, medica
 
 from types import SimpleNamespace
 from typing import Any
+import httpx
 
 from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
@@ -87,16 +88,28 @@ class FoundryToolRegistry:
         if tool_name not in supported_tools:
             raise ValueError(f"Tool '{tool_name}' not found")
 
-        # Phase 2 で Azure SDK による実際の Tool 取得ロジックを実装予定
-        # 現在は Foundry Portal での GUI 設定に依存
-        tool_placeholder = SimpleNamespace(
-            name=tool_name,
-            description=f"{tool_name.capitalize()} tool from Foundry Catalog",
-            phase="1-mvp",
-        )
+        # Phase 2: Return an HTTP-backed Foundry tool client for integration.
+        class FoundryHTTPTool:
+            def __init__(self, config: FoundryConfig, name: str):
+                self.name = name
+                self.config = config
 
-        self._tool_cache[tool_name] = tool_placeholder
-        return tool_placeholder
+            async def get_fundamentals(self, ticker: str) -> dict[str, Any]:
+                """Call the Foundry endpoint to get fundamentals for a ticker.
+
+                This is a thin wrapper around an HTTP call using configured env vars.
+                Tests may monkeypatch this method to return deterministic data.
+                """
+                url = f"{self.config.foundry_endpoint.rstrip('/')}/tools/{self.name}/fundamentals/{ticker}"
+                headers = {"Authorization": f"Bearer {self.config.foundry_api_key}"}
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.get(url, headers=headers)
+                    resp.raise_for_status()
+                    return resp.json()
+
+        tool_client = FoundryHTTPTool(self.config, tool_name)
+        self._tool_cache[tool_name] = tool_client
+        return tool_client
 
     def get_tools_for_agent(self, agent_name: str) -> list[Any]:
         """

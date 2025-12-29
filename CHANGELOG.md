@@ -11,6 +11,23 @@
 
 注: 上記はワーキングツリーにある未コミットの変更を短く記録したものです。コミット後、各エントリに代表的な短いコミットハッシュを追記します。ハッシュが増えた場合は、セマンティックバージョニング（マイナーバージョン）を適切に増やして管理してください。
 
+## [0.1.2] - 2025-12-29 (005ab3d)
+
+### 追加
+- `src/common/mcp/foundry_tool_registry.py`: HTTP 対応の `FoundryHTTPTool` クライアントとレジストリ統合を追加（非同期メソッド `get_fundamentals` を提供）。
+- `src/stock_magi/agents/melchior_agent.py`: `MelchiorAgent.analyze()` が、利用可能な場合に Foundry ツールの `get_fundamentals()` を呼び出し、その結果を BUY/SELL/HOLD にマッピングするようになりました。
+- 統合テスト（E2E 相当）: `tests/test_e2e_foundry_integration.py` を追加し、API → エージェント → Foundry クライアント → オーケストレータの経路をメソッドレベルの monkeypatch により検証します。
+
+### 変更
+- `src/common/consensus/orchestrators/group_chat_consensus.py`: `reach_consensus()` を更新し、`agent.analyze()` の出力や `input_context` 経由で渡される `analysis_result` を集計できるようにしました。これによりエージェントの実結果を投票に反映できます。
+
+### テスト
+- Foundry の応答をモックする決定論的な統合テストを追加し、BUY/SELL の判定パスを検証します。
+
+### 注意事項
+- 本リリースは Foundry ツールを HTTP 経由で呼び出すための初期フック（Phase-2 対応）を実装しました。実稼働のエンドポイントおよび認証情報は環境変数（`FOUNDRY_ENDPOINT`、`FOUNDRY_API_KEY` など）で設定する想定です。CI やテスト環境ではネットワークに依存しないよう、テスト側でツールのメソッドをモックしています。
+
+
 ## [0.1.1] - 2025-12-29 (f0c8a8d, e18cfb1, 05601a9)
 
 ### Added

@@ -68,20 +68,58 @@ class ReusableConsensusOrchestrator:
 
         votes: list[AgentVote] = []
 
-        # 各エージェントから投票を収集 (Phase 1: モック実装)
-        for agent in self.agents:
-            # TODO: Agent Framework の Agent.run() を呼び出し
-            # response = await agent.run(input_context)
-            # vote = self._parse_agent_response(response)
+        # 各エージェントから投票を収集
+        for idx, agent in enumerate(self.agents):
+            agent_name = getattr(agent, "name", "UnknownAgent")
 
-            # モック投票 (Phase 1 MVP)
-            vote = AgentVote(
-                agent_name=getattr(agent, "name", "UnknownAgent"),
-                action=Action.HOLD,  # デフォルト
-                confidence=0.5,
-                reasoning="Phase 1 MVP - モック実装。Phase 2 で Agent Framework 統合予定。",
+            # If caller already provided an analysis result for the first agent, use it
+            if idx == 0 and "analysis_result" in input_context:
+                provided = input_context.get("analysis_result")
+                if isinstance(provided, dict):
+                    action_str = provided.get("action")
+                    confidence = float(provided.get("confidence", 0.5))
+                    reasoning = provided.get("reasoning", "")
+                    try:
+                        action_enum = Action(action_str)
+                    except Exception:
+                        action_enum = Action(action_str.upper()) if isinstance(action_str, str) else Action.HOLD
+                    votes.append(AgentVote(agent_name=agent_name, action=action_enum, confidence=confidence, reasoning=reasoning))
+                    continue
+
+            # If agent exposes async `analyze`, call it and parse the result
+            if hasattr(agent, "analyze"):
+                try:
+                    result = await agent.analyze(input_context.get("ticker", ""))
+                    # Expect result to be a dict like {"action": "BUY", "confidence": 0.8, "reasoning": "..."}
+                    action_str = result.get("action") if isinstance(result, dict) else None
+                    confidence = float(result.get("confidence", 0.5)) if isinstance(result, dict) else 0.5
+                    reasoning = result.get("reasoning", "") if isinstance(result, dict) else ""
+
+                    if isinstance(action_str, str):
+                        try:
+                            action_enum = Action(action_str)
+                        except Exception:
+                            # Upper-case mapping fallback
+                            action_enum = Action(action_str.upper()) if isinstance(action_str, str) else Action.HOLD
+                    else:
+                        action_enum = Action.HOLD
+
+                    vote = AgentVote(agent_name=agent_name, action=action_enum, confidence=confidence, reasoning=reasoning)
+                    votes.append(vote)
+                    continue
+                except Exception:
+                    # On agent error, append a neutral HOLD vote
+                    votes.append(AgentVote(agent_name=agent_name, action=Action.HOLD, confidence=0.0, reasoning="agent error"))
+
+            # Fallback mock vote
+            votes.append(
+                AgentVote(
+                    agent_name=agent_name,
+                    action=Action.HOLD,
+                    confidence=0.5,
+                    reasoning="Phase 1 MVP - モック実装。",
+                )
             )
-            votes.append(vote)
 
         # 多数決で最終アクションを決定
         final_action = self._calculate_majority_vote(votes)

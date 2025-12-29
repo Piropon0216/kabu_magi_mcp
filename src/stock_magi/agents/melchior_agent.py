@@ -6,6 +6,7 @@ Phase 1 では Morningstar MCP Server (Foundry Tool Catalog) を使用。
 """
 
 from typing import Any
+import inspect
 
 from ..prompts.stock_analysis_prompts import (
     create_melchior_analysis_prompt,
@@ -73,27 +74,36 @@ class MelchiorAgent:
             - Tool calling で実際の Morningstar データ取得
             - LLM による動的判断
         """
-        # Phase 1: モック実装
-        # TODO: Foundry Tool Catalog の Morningstar tool を呼び出し
-        # market_data = await self.foundry_tool.get_fundamentals(ticker)
+        # If a Foundry tool client exists and exposes an async `get_fundamentals`, use it.
+        gf = getattr(self.foundry_tool, "get_fundamentals", None)
+        if gf is not None and inspect.iscoroutinefunction(gf):
+            try:
+                market_data = await gf(ticker)
+            except Exception:
+                return {"action": "HOLD", "confidence": 0.0, "reasoning": "Foundry call failed"}
 
-        market_data = {
-            "ticker": ticker,
-            "note": "Phase 1 MVP - モックデータ。Phase 2 で Morningstar 実データ統合予定。",
-        }
+            # Prompt still generated for future LLM integration
+            _analysis_prompt = create_melchior_analysis_prompt(ticker, market_data)
 
-        # プロンプト生成 (現在は未使用だが将来の統合のため保持)
-        _analysis_prompt = create_melchior_analysis_prompt(ticker, market_data)
+            # Simple heuristic mapping from foundry output to action
+            rec = market_data.get("recommendation") if isinstance(market_data, dict) else None
+            if isinstance(rec, str):
+                if rec.lower() in ("buy", "strong_buy"):
+                    return {"action": "BUY", "confidence": 0.8, "reasoning": f"Foundry recommendation: {rec}"}
+                if rec.lower() in ("sell", "strong_sell"):
+                    return {"action": "SELL", "confidence": 0.8, "reasoning": f"Foundry recommendation: {rec}"}
 
-        # Phase 1: 固定レスポンス
-        # Phase 2: Agent Framework で LLM 実行
-        # response = await self.agent.run(analysis_prompt)
+            fair = market_data.get("fair_value")
+            price = market_data.get("price")
+            if isinstance(fair, (int, float)) and isinstance(price, (int, float)):
+                if fair > price:
+                    return {"action": "BUY", "confidence": 0.7, "reasoning": "fair_value > price"}
+                if fair < price:
+                    return {"action": "SELL", "confidence": 0.7, "reasoning": "fair_value < price"}
 
-        return {
-            "action": "HOLD",
-            "confidence": 0.5,
-            "reasoning": f"Phase 1 MVP - {ticker} のモック分析。Phase 2 で Agent Framework + Morningstar 統合予定。",
-        }
+        # Fallback Phase 1 mock response
+        _analysis_prompt = create_melchior_analysis_prompt(ticker, {"ticker": ticker})
+        return {"action": "HOLD", "confidence": 0.5, "reasoning": f"Phase 1 MVP - {ticker} のモック分析。"}
 
 
 def create_melchior_agent(foundry_tool: Any) -> MelchiorAgent:
