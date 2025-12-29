@@ -5,9 +5,10 @@ Microsoft Agent Framework を使用した実装。
 Phase 1 では Morningstar MCP Server (Foundry Tool Catalog) を使用。
 """
 
-from typing import Any
+from typing import Any, Optional
 
 from ..prompts.stock_analysis_prompts import (
+    MELCHIOR_SYSTEM_MESSAGE,
     create_melchior_analysis_prompt,
 )
 
@@ -79,11 +80,11 @@ class MelchiorAgent:
 
         market_data = {
             "ticker": ticker,
-            "note": "Phase 1 MVP - モックデータ。Phase 2 で Morningstar 実データ統合予定。"
+            "note": "Phase 1 MVP - モックデータ。Phase 2 で Morningstar 実データ統合予定。",
         }
 
-        # プロンプト生成
-        analysis_prompt = create_melchior_analysis_prompt(ticker, market_data)
+        # プロンプト生成 (現在は未使用だが将来の統合のため保持)
+        _analysis_prompt = create_melchior_analysis_prompt(ticker, market_data)
 
         # Phase 1: 固定レスポンス
         # Phase 2: Agent Framework で LLM 実行
@@ -92,7 +93,7 @@ class MelchiorAgent:
         return {
             "action": "HOLD",
             "confidence": 0.5,
-            "reasoning": f"Phase 1 MVP - {ticker} のモック分析。Phase 2 で Agent Framework + Morningstar 統合予定。"
+            "reasoning": f"Phase 1 MVP - {ticker} のモック分析。Phase 2 で Agent Framework + Morningstar 統合予定。",
         }
 
 

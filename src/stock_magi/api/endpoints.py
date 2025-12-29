@@ -4,6 +4,7 @@ FastAPI endpoints for Stock MAGI system.
 POST /api/analyze - 銘柄分析エンドポイント
 """
 
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -18,17 +19,19 @@ router = APIRouter(prefix="/api", tags=["analysis"])
 
 class AnalyzeRequest(BaseModel):
     """銘柄分析リクエスト"""
+
     ticker: str = Field(..., description="銘柄コード (例: '7203.T' for Toyota)", min_length=1)
     include_reasoning: bool = Field(default=True, description="推論プロセスを含めるか")
 
 
 class AnalyzeResponse(BaseModel):
     """銘柄分析レスポンス"""
+
     ticker: str
     final_action: Action
-    confidence: float | None = None
+    confidence: Optional[float] = None
     summary: str
-    reasoning: list[dict] | None = None
+    reasoning: Optional[list[dict]] = None
     has_conflict: bool
 
 
@@ -68,16 +71,10 @@ async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
         analysis_result = await melchior.analyze(request.ticker)
 
         # 4. Consensus Orchestrator で合議 (Phase 1: モック投票)
-        orchestrator = ReusableConsensusOrchestrator(
-            agents=[melchior],
-            voting_strategy="majority"
-        )
+        orchestrator = ReusableConsensusOrchestrator(agents=[melchior], voting_strategy="majority")
 
         decision: FinalDecision = await orchestrator.reach_consensus(
-            input_context={
-                "ticker": request.ticker,
-                "analysis_result": analysis_result
-            }
+            input_context={"ticker": request.ticker, "analysis_result": analysis_result}
         )
 
         # 5. レスポンスを構築
@@ -91,20 +88,21 @@ async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
                     "agent": vote.agent_name,
                     "action": vote.action.value,
                     "confidence": vote.confidence,
-                    "reasoning": vote.reasoning
+                    "reasoning": vote.reasoning,
                 }
                 for vote in decision.votes
-            ] if request.include_reasoning else None,
-            has_conflict=decision.has_conflict
+            ]
+            if request.include_reasoning
+            else None,
+            has_conflict=decision.has_conflict,
         )
 
         return response
 
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"分析中にエラーが発生しました: {str(e)}"
-        )
+            status_code=500, detail=f"分析中にエラーが発生しました: {str(e)}"
+        ) from e
 
 
 @router.get("/health")
