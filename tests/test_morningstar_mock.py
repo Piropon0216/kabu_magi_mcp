@@ -51,7 +51,6 @@ async def test_analyze_endpoint_bullish(monkeypatch):
         resp = await client.post("/api/analyze", json={"ticker": "MSFT", "include_reasoning": True})
 
     assert resp.status_code == 200
-    data = resp.json()
     # Current orchestrator is a Phase-1 placeholder that returns mock votes (HOLD)
     # Verify the Melchior agent / Foundry tool path was invoked instead
     assert getattr(mock_tool, "called", True) is True
@@ -76,7 +75,6 @@ async def test_analyze_endpoint_bearish(monkeypatch):
         resp = await client.post("/api/analyze", json={"ticker": "AAPL", "include_reasoning": False})
 
     assert resp.status_code == 200
-    data = resp.json()
     assert getattr(mock_tool, "called", True) is True
 
 
