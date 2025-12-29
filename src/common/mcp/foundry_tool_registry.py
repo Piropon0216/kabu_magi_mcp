@@ -5,8 +5,8 @@ This module provides a unified interface to access tools from the Foundry Tool C
 making it reusable across different domains (stock analysis, real estate, medical diagnosis, etc.).
 """
 
-from typing import Any
 from types import SimpleNamespace
+from typing import Any
 
 from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings

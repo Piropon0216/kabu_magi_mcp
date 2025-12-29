@@ -2,7 +2,6 @@
 Unit tests for Foundry Tool Registry
 """
 
-from unittest.mock import MagicMock, patch
 
 import pytest
 
