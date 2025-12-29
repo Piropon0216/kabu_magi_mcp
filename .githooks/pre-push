@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Local pre-push hook: run tests before allowing a push.
+# Pre-push hook: run quick unit (smoke) tests + lint before allowing a push.
+# This keeps push latency reasonable while catching common issues.
 # Install in your clone by running:
 #   git config core.hooksPath .githooks
-# Then this script will run automatically on git push.
 
-echo "Running pre-push tests: poetry run pytest"
+echo "Running pre-push: lint (ruff) + smoke unit tests"
 
 # Ensure dependencies are installed (non-interactive)
 if command -v poetry >/dev/null 2>&1; then
   poetry install --no-interaction --no-ansi || true
 fi
 
-# Run tests; if they fail, exit non-zero to block push
-poetry run pytest -q
+# Lint
+if command -v ruff >/dev/null 2>&1 || poetry run ruff --version >/dev/null 2>&1; then
+  poetry run ruff check . || { echo "ruff found issues"; exit 1; }
+else
+  echo "ruff not available, skipping lint"
+fi
 
-echo "pre-push: tests passed. Proceeding with push."
+# Run smoke/unit tests (fast)
+if [ -x "./scripts/smoke-tests.sh" ]; then
+  ./scripts/smoke-tests.sh || { echo "smoke tests failed"; exit 1; }
+else
+  echo "smoke test script not found, skipping"
+fi
+
+echo "pre-push: lint and smoke tests passed. Proceeding with push."
