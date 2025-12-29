@@ -5,8 +5,8 @@ Microsoft Agent Framework を使用した実装。
 Phase 1 では Morningstar MCP Server (Foundry Tool Catalog) を使用。
 """
 
-from typing import Any
 import inspect
+from typing import Any
 
 from ..prompts.stock_analysis_prompts import (
     create_melchior_analysis_prompt,
@@ -95,7 +95,7 @@ class MelchiorAgent:
 
             fair = market_data.get("fair_value")
             price = market_data.get("price")
-            if isinstance(fair, (int, float)) and isinstance(price, (int, float)):
+            if isinstance(fair, int | float) and isinstance(price, int | float):
                 if fair > price:
                     return {"action": "BUY", "confidence": 0.7, "reasoning": "fair_value > price"}
                 if fair < price:

@@ -4,13 +4,13 @@ Tests that mock Morningstar (Foundry) tool and verify the API -> agent -> consen
 These tests monkeypatch `FoundryToolRegistry.get_tool` and `create_melchior_agent`
 to inject a mock tool and agent that return deterministic results.
 """
-import pytest
 from types import SimpleNamespace
 
+import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.main import app
 from src.common.mcp import FoundryToolRegistry
+from src.main import app
 
 
 class MockAgent:
@@ -25,8 +25,8 @@ class MockAgent:
 
         # Expect tool to carry a `mock_result` dict
         # mark called and return mock result
-        setattr(self.foundry_tool, "called", True)
-        return getattr(self.foundry_tool, "mock_result")
+        self.foundry_tool.called = True
+        return self.foundry_tool.mock_result
 
 
 @pytest.mark.asyncio
