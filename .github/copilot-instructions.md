@@ -60,7 +60,29 @@ sudo apt install -y gh
 
 ### 4) CI の設定について
 
-このリポジトリにまだ CI ワークフローが無い場合は、PR 作成時に `pytest`, `ruff`, `mypy` を走らせる GitHub Actions を追加することを推奨します。
+
+このリポジトリにはセルフホスト向けの CI ワークフロー `./github/workflows/ci-self-hosted.yml` を追加済みです。
+
+セルフホストランナーのメリット:
+- GitHub の有料実行分を消費しない（GitHub Actions の課金対象外）
+- 自分のインフラで自由に実行できるためコスト制御が可能
+
+注意点（重要）:
+- セルフホストランナーはご自身でマシンを用意し、リポジトリに runner を登録する必要があります。マシンは常時起動している必要はありませんが、実行中にジョブを受信できる状態である必要があります。
+- セキュリティ: セルフホストランナー上では任意のジョブが実行されうるため、パブリックリポジトリや未審査ブランチでは信頼できるランナーのみを使ってください。
+
+簡易セットアップ手順（セルフホストランナー）:
+
+1. GitHub リポジトリの Settings → Actions → Runners → New self-hosted runner を開く
+2. OS とアーキテクチャを選び、表示される登録コマンドを実行する（例: `./config.sh --url https://github.com/OWNER/REPO --token XXX`）
+3. ランナーをサービスとして登録して常時稼働させる（任意）
+
+ワークフローファイルのポイント:
+- ファイル: `.github/workflows/ci-self-hosted.yml`
+- 実行環境: `runs-on: [self-hosted, linux]`（自分で用意するランナーが実行されます）
+- ステップ: Checkout → Poetry install → `ruff` → `mypy` → `pytest`
+
+もし希望であれば、私がランナーのための Docker コンテナ定義（systemd もしくは runner を常駐させるスクリプト）や、簡易の Ansible/Cloud-Init スニペットを作成します。どれを希望しますか？
 
 ---
 
