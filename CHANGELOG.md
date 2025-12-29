@@ -58,17 +58,56 @@
 ### Test
 - Phase 1 MVP: 全37テスト合格、カバレッジ95%
 
-## [Unreleased] - 2025-12-29
+## [Unreleased]
+
+No unreleased changes.
+
+## [0.1.1] - 2025-12-29
+
+### Added
+- `infra/runner` の systemd スクリプトとコンテナ化サンプルを追加（セルフホスト runner 用）。
+- ローカル開発用の Git フック（`.githooks/pre-commit`, `.githooks/pre-push`）およびスモーク/フルテストスクリプトを追加。
+
+### Changed
+- コードスタイルと型注釈を `ruff` に合わせて整備し、自動修正・手動修正を適用（約100件の自動修正、残り手動修正を適用）。
+- `src/common/mcp/foundry_tool_registry.py` を含む Pydantic v2 対応の調整を反映。
 
 ### Fixed
-- リポジトリ全体に対して `ruff check . --fix` を実行し、自動修正可能なスタイル問題を適用（約100件修正）。
-
-### Status
-- 自動修正で残っていた `ruff` の警告（29件）は手動で修正し、現在は全ての `ruff` チェックが通過しています。
-- このコミットには `ruff` 自動修正の適用と、残りの手動修正、`CHANGELOG.md` の追記が含まれます。
+- Pydantic v2 移行に伴う環境変数/設定読み込みの不整合を修正（`model_config` の調整、Field alias の適用）。
+- リント（`ruff`）関連の多数のスタイル問題を解消し、`ruff check .` が通過する状態にしました。
 
 ### Chore
-- `CHANGELOG.md` を更新して運用ルール（コミット時に必ず追記）に従いました。
+- 依存ロックファイルを更新（`poetry lock` → `poetry.lock` を更新・コミット）。
+- `CHANGELOG.md` に今回の作業内容を追記（コミットルールに従い記録）。
+
+### Test
+- スモークテストとフルテストを実行し、既存のテストはすべて合格（37 tests passed）。
+
+### Development Notes — Trial & Error
+
+- 2025-12-28 → 2025-12-29: Pydantic v2 移行中に複数の問題が発生。最初の試行では `FoundryConfig` 周辺で環境変数の alias/読み込み順序によりバリデーションエラーが多発し、テストが失敗しました。
+	- 対処: `FoundryConfig` を `ConfigDict` と `Field(..., alias=...)` に合わせて書き換え、`model_config` 設定で env_file と prefix の挙動を明確化しました。
+
+- ローカルでの確認中に、コミット/プッシュ時の Git フック（ローカル `.githooks/pre-commit` と `.githooks/pre-push`）が開発フローに影響することが判明しました。
+	- 具体的には、`pre-push` が `ruff` を実行しており、スタイル違反があると push がブロックされるため、最初の push が失敗しました。
+
+- `ruff` による静的解析で多数の指摘（W293: 空行末の空白、I001: import 整列、F401/F841: 未使用 import/変数、UP007/B904: 型注釈・例外チェーンの改善など）が報告されました。
+	- 対処の流れ:
+		1. `poetry run ruff check . --fix` を実行し、自動修正可能な問題を適用（約100件の自動修正）。
+		2. 自動修正で残った警告に対して手動修正を実施（例: 未使用プロンプト変数を `_analysis_prompt` に変更、`except ...: raise ... from e` の適用など）。
+		3. 行末空白については一括トリム（sed）で削除し、再度 `ruff` を実行して残りを解消しました。
+
+- `pre-commit` はスモークテストを実行する構成のため、コミット時にテストが通ることを確認しつつコミットを積み上げました（各コミットはスモークテスト成功を確認）。
+
+- 依存関係の記述 (`pyproject.toml`) とロックファイル（`poetry.lock`）に差があり、作業の過程で `poetry lock` を実行して `poetry.lock` を更新しました。これにより、CI やフックでの依存解決が安定しました。
+
+- 最終的に、`ruff check .` は全てパスし、スモークテスト・フルテストともに成功した状態で `fix/pydantic-v2-env-alias` ブランチをリモートへプッシュしました。
+
+- 注意点・残件:
+	- 本件はスタイル整備・Pydantic v2 対応・ローカルフック運用の改善が中心で、機能的な大規模変更は行っていません。今後、別タスクで追加リファクタリング（型注釈の細部調整、ドキュメントの補完）を検討してください。
+	- 本作業で発生したファイル追加（`infra/runner` 等）はドキュメント整備と runner 運用を容易にするためのサンプルです。実運用では GitHub の runner 登録トークンを取得してホストで登録する必要があります。
+
+
 
 ---
 
