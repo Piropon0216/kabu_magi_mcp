@@ -4,7 +4,6 @@ FastAPI endpoints for Stock MAGI system.
 POST /api/analyze - 銘柄分析エンドポイント
 """
 
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -29,9 +28,9 @@ class AnalyzeResponse(BaseModel):
 
     ticker: str
     final_action: Action
-    confidence: Optional[float] = None
+    confidence: float | None = None
     summary: str
-    reasoning: Optional[list[dict]] = None
+    reasoning: list[dict] | None = None
     has_conflict: bool
 
 

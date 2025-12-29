@@ -5,10 +5,9 @@ Microsoft Agent Framework を使用した実装。
 Phase 1 では Morningstar MCP Server (Foundry Tool Catalog) を使用。
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from ..prompts.stock_analysis_prompts import (
-    MELCHIOR_SYSTEM_MESSAGE,
     create_melchior_analysis_prompt,
 )
 
