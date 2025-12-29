@@ -5,7 +5,6 @@ E2E tests for API endpoints
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.common.models import Action
 from src.main import app
 
 

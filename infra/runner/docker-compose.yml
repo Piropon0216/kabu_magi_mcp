@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  actions-runner:
+    build: ./docker
+    container_name: actions-runner
+    environment:
+      # Set these in a private .env or via docker-compose -f ... up
+      - RUNNER_REPO_URL=${RUNNER_REPO_URL}
+      - RUNNER_TOKEN=${RUNNER_TOKEN}
+      - RUNNER_NAME=${RUNNER_NAME}
+      - RUNNER_LABELS=${RUNNER_LABELS}
+    volumes:
+      - ./_work:/actions-runner/_work
+      # If you want the runner to be able to run docker builds, uncomment the socket mount
+      # - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    shm_size: '1gb'

@@ -5,7 +5,7 @@ This module provides a unified interface to access tools from the Foundry Tool C
 making it reusable across different domains (stock analysis, real estate, medical diagnosis, etc.).
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
@@ -44,7 +44,7 @@ class FoundryToolRegistry:
         >>> tools = registry.get_tools_for_agent("Melchior")
     """
 
-    def __init__(self, config: Optional[FoundryConfig] = None):
+    def __init__(self, config: FoundryConfig | None = None):
         """
         Initialize the Foundry Tool Registry
 

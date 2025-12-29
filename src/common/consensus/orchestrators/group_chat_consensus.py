@@ -5,7 +5,7 @@ This orchestrator wraps Agent Framework's GroupChatOrchestrator to provide
 a domain-agnostic consensus mechanism for multi-agent systems.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from src.common.models.decision_models import Action, AgentVote, FinalDecision
 
@@ -26,7 +26,7 @@ class ReusableConsensusOrchestrator:
     Phase 2: 加重投票、対立検出
     """
 
-    def __init__(self, agents: list[Any], voting_strategy: Optional[str] = "majority"):
+    def __init__(self, agents: list[Any], voting_strategy: str | None = "majority"):
         """
         Initialize the consensus orchestrator
 

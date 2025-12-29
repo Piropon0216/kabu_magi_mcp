@@ -6,7 +6,7 @@ ensuring type safety and validation across all domain applications.
 """
 
 from enum import Enum
-from typing import Optional
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -38,7 +38,7 @@ class AgentVote(BaseModel):
     action: Action = Field(..., description="推奨アクション")
     confidence: float = Field(..., ge=0.0, le=1.0, description="信頼度 (0.0-1.0)")
     reasoning: str = Field(..., min_length=10, description="判断理由 (最低10文字)")
-    
+
     @field_validator('confidence')
     @classmethod
     def validate_confidence(cls, v: float) -> float:
@@ -61,15 +61,15 @@ class FinalDecision(BaseModel):
     """
     final_action: Action = Field(..., description="最終アクション")
     votes: list[AgentVote] = Field(..., min_length=1, description="エージェント投票リスト")
-    weighted_confidence: Optional[float] = Field(
-        None, 
-        ge=0.0, 
-        le=1.0, 
+    weighted_confidence: float | None = Field(
+        None,
+        ge=0.0,
+        le=1.0,
         description="加重平均信頼度 (Phase 2)"
     )
     summary: str = Field(..., min_length=20, description="合議結果サマリー (最低20文字)")
     has_conflict: bool = Field(False, description="投票対立フラグ")
-    
+
     @field_validator('votes')
     @classmethod
     def validate_votes(cls, v: list[AgentVote]) -> list[AgentVote]:
@@ -77,7 +77,7 @@ class FinalDecision(BaseModel):
         if not v:
             raise ValueError("At least one agent vote is required")
         return v
-    
+
     @field_validator('has_conflict')
     @classmethod
     def detect_conflict(cls, v: bool, info) -> bool:

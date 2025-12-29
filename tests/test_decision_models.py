@@ -3,6 +3,7 @@ Unit tests for decision models
 """
 
 import pytest
+
 from src.common.models.decision_models import Action, AgentVote, FinalDecision
 
 
@@ -21,7 +22,7 @@ def test_agent_vote_valid():
         confidence=0.85,
         reasoning="PER 12.5, ROE 15%, 自己資本比率 50% で財務健全"
     )
-    
+
     assert vote.agent_name == "Melchior"
     assert vote.action == Action.BUY
     assert vote.confidence == 0.85
@@ -38,7 +39,7 @@ def test_agent_vote_confidence_range():
         reasoning="不確実性が高いため HOLD を推奨します"
     )
     assert vote.confidence == 0.5
-    
+
     # 範囲外 (0.0 未満) - Pydantic v2 では ValidationError
     from pydantic import ValidationError
     with pytest.raises(ValidationError, match="greater than or equal to 0"):
@@ -48,7 +49,7 @@ def test_agent_vote_confidence_range():
             confidence=-0.1,
             reasoning="Invalid confidence value test"
         )
-    
+
     # 範囲外 (1.0 超過)
     with pytest.raises(ValidationError, match="less than or equal to 1"):
         AgentVote(
@@ -87,7 +88,7 @@ def test_final_decision_valid():
             reasoning="上昇トレンドが継続しています"
         ),
     ]
-    
+
     decision = FinalDecision(
         final_action=Action.BUY,
         votes=votes,
@@ -95,7 +96,7 @@ def test_final_decision_valid():
         summary="2エージェントが BUY 判定。ファンダメンタルズとテクニカル両面で買いシグナル。",
         has_conflict=False
     )
-    
+
     assert decision.final_action == Action.BUY
     assert len(decision.votes) == 2
     assert decision.weighted_confidence == 0.80
@@ -113,7 +114,7 @@ def test_final_decision_summary_min_length():
             reasoning="判断材料が不足しています"
         )
     ]
-    
+
     with pytest.raises(ValidationError, match="at least 20 characters"):
         FinalDecision(
             final_action=Action.HOLD,
@@ -156,14 +157,14 @@ def test_final_decision_conflict_detection_placeholder():
             reasoning="ネガティブなセンチメントが優勢です"
         ),
     ]
-    
+
     decision = FinalDecision(
         final_action=Action.HOLD,
         votes=votes,
         summary="エージェント間で意見が対立しているため HOLD を推奨します。",
         has_conflict=True  # Phase 1: 手動設定
     )
-    
+
     assert decision.has_conflict is True
 
 

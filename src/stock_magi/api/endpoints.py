@@ -4,15 +4,14 @@ FastAPI endpoints for Stock MAGI system.
 POST /api/analyze - 銘柄分析エンドポイント
 """
 
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
 
-from src.common.models import FinalDecision, Action
-from src.common.mcp import FoundryToolRegistry
 from src.common.consensus import ReusableConsensusOrchestrator
+from src.common.mcp import FoundryToolRegistry
+from src.common.models import Action, FinalDecision
 from src.stock_magi.agents import create_melchior_agent
-
 
 router = APIRouter(prefix="/api", tags=["analysis"])
 
@@ -27,9 +26,9 @@ class AnalyzeResponse(BaseModel):
     """銘柄分析レスポンス"""
     ticker: str
     final_action: Action
-    confidence: Optional[float] = None
+    confidence: float | None = None
     summary: str
-    reasoning: Optional[list[dict]] = None
+    reasoning: list[dict] | None = None
     has_conflict: bool
 
 
@@ -61,26 +60,26 @@ async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
         # 1. Foundry Tool Registry から Morningstar tool を取得
         registry = FoundryToolRegistry()
         morningstar_tool = registry.get_tool("morningstar")
-        
+
         # 2. Melchior エージェントを作成
         melchior = create_melchior_agent(morningstar_tool)
-        
+
         # 3. Phase 1: 単一エージェント分析 (Phase 2 で複数エージェント合議)
         analysis_result = await melchior.analyze(request.ticker)
-        
+
         # 4. Consensus Orchestrator で合議 (Phase 1: モック投票)
         orchestrator = ReusableConsensusOrchestrator(
             agents=[melchior],
             voting_strategy="majority"
         )
-        
+
         decision: FinalDecision = await orchestrator.reach_consensus(
             input_context={
                 "ticker": request.ticker,
                 "analysis_result": analysis_result
             }
         )
-        
+
         # 5. レスポンスを構築
         response = AnalyzeResponse(
             ticker=request.ticker,
@@ -98,9 +97,9 @@ async def analyze_stock(request: AnalyzeRequest) -> AnalyzeResponse:
             ] if request.include_reasoning else None,
             has_conflict=decision.has_conflict
         )
-        
+
         return response
-    
+
     except Exception as e:
         raise HTTPException(
             status_code=500,

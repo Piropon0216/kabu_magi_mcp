@@ -1,0 +1,14 @@
+[Unit]
+Description=GitHub Actions Runner (container-friendly)
+After=network.target
+
+[Service]
+Type=simple
+User=actions-runner
+WorkingDirectory=/opt/actions-runner
+ExecStart=/opt/actions-runner/run.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
