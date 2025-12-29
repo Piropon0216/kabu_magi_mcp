@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Local pre-push hook: run tests before allowing a push.
+# Install in your clone by running:
+#   git config core.hooksPath .githooks
+# Then this script will run automatically on git push.
+
+echo "Running pre-push tests: poetry run pytest"
+
+# Ensure dependencies are installed (non-interactive)
+if command -v poetry >/dev/null 2>&1; then
+  poetry install --no-interaction --no-ansi || true
+fi
+
+# Run tests; if they fail, exit non-zero to block push
+poetry run pytest -q
+
+echo "pre-push: tests passed. Proceeding with push."
