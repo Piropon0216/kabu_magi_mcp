@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Pre-commit hook: run fast smoke tests before allowing a commit.
+# Enable by running: git config core.hooksPath .githooks
+
+echo "Running pre-commit smoke tests..."
+if command -v poetry >/dev/null 2>&1; then
+  poetry install --no-interaction --no-ansi || true
+fi
+
+./scripts/smoke-tests.sh
+
+echo "pre-commit: smoke tests passed."
