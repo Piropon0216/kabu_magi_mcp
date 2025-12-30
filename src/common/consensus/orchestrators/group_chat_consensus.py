@@ -5,9 +5,16 @@ This orchestrator wraps Agent Framework's GroupChatOrchestrator to provide
 a domain-agnostic consensus mechanism for multi-agent systems.
 """
 
+import datetime
+import inspect
+import json
+import logging
+import os
 from typing import Any
 
 from src.common.models.decision_models import Action, AgentVote, FinalDecision
+
+_logger = logging.getLogger(__name__)
 
 
 class ReusableConsensusOrchestrator:
@@ -97,10 +104,13 @@ class ReusableConsensusOrchestrator:
                     )
                     continue
 
-            # If agent exposes async `analyze`, call it and parse the result
-            if hasattr(agent, "analyze"):
+            # If agent exposes async `analyze`, call it and parse the result.
+            # Use `inspect.iscoroutinefunction` to avoid awaiting MagicMock
+            # attributes (MagicMock provides attributes dynamically).
+            analyze_attr = getattr(agent, "analyze", None)
+            if analyze_attr and inspect.iscoroutinefunction(analyze_attr):
                 try:
-                    result = await agent.analyze(input_context.get("ticker", ""))
+                    result = await analyze_attr(input_context.get("ticker", ""))
                     # Expect result to be a dict like {"action": "BUY", "confidence": 0.8, "reasoning": "..."}
                     action_str = result.get("action") if isinstance(result, dict) else None
                     confidence = (
@@ -139,6 +149,7 @@ class ReusableConsensusOrchestrator:
                             reasoning="agent error",
                         )
                     )
+                    continue
 
             # Fallback mock vote
             votes.append(
@@ -161,6 +172,37 @@ class ReusableConsensusOrchestrator:
             summary=f"Phase 1 MVP: {len(votes)}エージェントによる合議結果。最終アクション: {final_action.value}",
             has_conflict=False,  # Phase 2 で自動検出
         )
+
+        # Structured JSON-lines logging for audit/replay if path is configured
+        try:
+            log_path = os.environ.get("CONSENSUS_LOG_PATH")
+            if log_path:
+                record = {
+                    "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                    "ticker": input_context.get("ticker"),
+                    "final_action": decision.final_action.value,
+                    "summary": decision.summary,
+                    "votes": [
+                        {
+                            "agent_name": v.agent_name,
+                            "action": v.action.value
+                            if hasattr(v.action, "value")
+                            else str(v.action),
+                            "confidence": float(v.confidence)
+                            if getattr(v, "confidence", None) is not None
+                            else None,
+                            "reasoning": getattr(v, "reasoning", ""),
+                        }
+                        for v in decision.votes
+                    ],
+                }
+                dirpath = os.path.dirname(log_path) or "."
+                os.makedirs(dirpath, exist_ok=True)
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                _logger.debug("Consensus recorded to %s", log_path)
+        except Exception:
+            _logger.exception("Failed to write consensus log")
 
         return decision
 

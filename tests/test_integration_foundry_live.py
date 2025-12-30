@@ -23,7 +23,29 @@ REQUIRED = ["FOUNDRY_ENDPOINT", "FOUNDRY_API_KEY", "FOUNDRY_DEPLOYMENT", "FOUNDR
 
 
 def has_foundry_envs() -> bool:
-    return all(os.environ.get(k) for k in REQUIRED)
+    # Return True only when all required env vars are present and they are
+    # not the test-placeholder values injected by the test conftest fixture.
+    placeholders = {
+        "FOUNDRY_ENDPOINT": "https://test.foundry.azure.com",
+        "FOUNDRY_API_KEY": "test_api_key_12345",
+        "FOUNDRY_DEPLOYMENT": "gpt-4o-test",
+        "FOUNDRY_API_VERSION": "2024-12-01",
+    }
+
+    # Require explicit opt-in for running live Foundry tests. This prevents
+    # accidental live calls when a developer has placeholder values in
+    # their .env. To run live tests, set `FOUNDRY_ALLOW_LIVE_TESTS=1`.
+    if os.environ.get("FOUNDRY_ALLOW_LIVE_TESTS") != "1":
+        return False
+
+    for k in REQUIRED:
+        v = os.environ.get(k)
+        if not v:
+            return False
+        if placeholders.get(k) and v == placeholders[k]:
+            # placeholder detected — treat as not configured for live runs
+            return False
+    return True
 
 
 @pytest.mark.skipif(not has_foundry_envs(), reason="FOUNDRY env vars not set")
