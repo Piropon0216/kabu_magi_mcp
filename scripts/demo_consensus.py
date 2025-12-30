@@ -5,6 +5,7 @@ Usage examples:
   python scripts/demo_consensus.py --ticker 7203.T --data-source mock
   MCP: MCP_URL=http://localhost:8000 python scripts/demo_consensus.py --data-source mcp
 """
+
 from __future__ import annotations
 
 import argparse
@@ -53,9 +54,15 @@ class MarketDataProvider:
                 # sample client may expose get_latest_price; adapt if needed
                 price = getattr(c, "get_latest_price", lambda t: {"price": 0})(ticker)
                 if isinstance(price, dict) and "price" in price:
-                    return {"price": float(price["price"]), "history": price.get("history", []), "prev_close": price.get("prev_close", 0)}
+                    return {
+                        "price": float(price["price"]),
+                        "history": price.get("history", []),
+                        "prev_close": price.get("prev_close", 0),
+                    }
             except Exception as err:
-                raise RuntimeError("jquants data source not implemented in this demo or client unavailable") from err
+                raise RuntimeError(
+                    "jquants data source not implemented in this demo or client unavailable"
+                ) from err
 
         raise RuntimeError("unknown data source")
 
@@ -83,7 +90,11 @@ class FundamentalAgent(BaseAgent):
         else:
             action = "HOLD"
             confidence = 0.5
-        return {"action": action, "confidence": confidence, "reasoning": f"Fundamental rule on price {price}"}
+        return {
+            "action": action,
+            "confidence": confidence,
+            "reasoning": f"Fundamental rule on price {price}",
+        }
 
 
 class TechnicalAgent(BaseAgent):
@@ -118,7 +129,9 @@ class SentimentAgent(BaseAgent):
 def to_json(decision: FinalDecision) -> dict[str, Any]:
     return {
         "final_action": decision.final_action.value,
-        "votes": [v.model_dump() if hasattr(v, "model_dump") else v.__dict__ for v in decision.votes],
+        "votes": [
+            v.model_dump() if hasattr(v, "model_dump") else v.__dict__ for v in decision.votes
+        ],
         "summary": decision.summary,
     }
 
@@ -132,7 +145,11 @@ def main(argv: list[str] | None = None) -> int:
 
     provider = MarketDataProvider(source=args.data_source, mcp_url=args.mcp_url)
 
-    agents = [FundamentalAgent("Fundamental", provider), TechnicalAgent("Technical", provider), SentimentAgent("Sentiment", provider)]
+    agents = [
+        FundamentalAgent("Fundamental", provider),
+        TechnicalAgent("Technical", provider),
+        SentimentAgent("Sentiment", provider),
+    ]
 
     orchestrator = ReusableConsensusOrchestrator(agents=agents, voting_strategy="majority")
 
