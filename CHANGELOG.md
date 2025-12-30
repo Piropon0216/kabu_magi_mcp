@@ -3,18 +3,27 @@
 このプロジェクトの重要な変更はここに記録します。
 形式は Keep a Changelog に準拠し、リリース見出しには参照可能な短いコミットハッシュを併記してトレースできるようにします。
 
+## [0.1.3] - 2025-12-30 (eb1a93d)
+
+### Added
+- `src/common/consensus/orchestrators/group_chat_consensus.py`: 合議オーケストレータに構造化JSONL (JSON-lines) ログ出力を追加しました（環境変数 `CONSENSUS_LOG_PATH` を設定すると追記されます）。
+- `scripts/demo_consensus.py`: 3エージェントのデモCLIを追加（`--data-source` に `mock|mcp|jquants` を指定可能）。
+- `src/mcp_providers/jquants_mcp.py`: J-Quants 用の軽量 MCP PoC を追加。`GET /tools/jquants/price/{ticker}` を提供します。
+
+### Changed
+- `sample/client.py`: J-Quants 認証周りを改善。`mail_address`/`password` を受け取り、`.env` からの読み込みと既存トークンの扱いを安定化しました。
+
+### Fixed
+- テストと linter の指摘を修正し、`ruff check . --fix` と `pytest` が通る状態にしました（ローカル確認: 42 passed, 2 skipped）。
+
+### Notes
+- このリリースはデモ用のモック→MCP→J-Quants のデータソース切替を容易にし、合議処理の監査ログ（再現・解析用）を追加するための小変更群です。
+
+コミット: eb1a93d
+
 ## [Unreleased]
 
-### 変更内容（作業中）
-- `src/mcp_providers/jquants_mcp.py`：J-Quants 用の MCP PoC を追加しました。エンドポイント `GET /tools/jquants/price/{ticker}` を提供し、プロジェクトルートの `.env` から認証情報を読み取ります。公式の `jquants-api-client` を優先で利用し、存在しない場合はサンプルクライアントにフォールバックします。取得結果の `pandas.DataFrame` は JSON 互換に正規化して返却します。
-- `sample/client.py`：認証関連の改善を行いました。`mail_address` / `password` をコンストラクタで受け取れるようにし、環境変数名の別名を許容、空のリフレッシュトークンを無視する挙動を追加しました。
-- `docs/jquants_mcp.md`：拡張手順、ローカルでの検証方法、コンテナ化（Azure Container Apps Jobs 向け）に関するドキュメントを追加しました。
-- `CHANGELOG.md`：未リリース項目を日本語で記載しました。
-
-コミット: c328289
-関連バージョン: 0.1.0
-
-注: 上記はワーキングツリーにある未コミットの変更を短く記録したものです。コミット後に短いコミットハッシュを追記します。
+No unreleased changes.
 
 ## [0.1.2] - 2025-12-29 (005ab3d)
 
