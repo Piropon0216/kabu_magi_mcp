@@ -19,7 +19,7 @@
   - Configure `ruff.toml` for linting and formatting
   - Create `.env.example` for environment variables
   - _目的: Agent Framework の最新機能を使用できる環境を構築_
-  
+
 - [ ] 1.2 Set up Microsoft Foundry connection
   - Create Foundry project in Azure Portal
   - Deploy GPT-4o model

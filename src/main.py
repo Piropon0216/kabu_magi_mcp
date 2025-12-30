@@ -6,11 +6,11 @@ Microsoft Agent Framework + Foundry を使用した株式分析 API
 
 import logging
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.stock_magi.api import router
-
 
 # ロギング設定
 logging.basicConfig(
@@ -24,19 +24,19 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     FastAPI lifespan イベント
-    
+
     起動時: ロギング、初期化処理
     終了時: クリーンアップ処理
     """
     logger.info("🚀 Stock MAGI System starting...")
     logger.info("📊 Phase 1 MVP - Melchior agent + Morningstar tool")
-    
+
     # Phase 2 で追加予定: Agent Framework 初期化
     # - DevUI 起動 (visual debugging)
     # - Foundry 接続確認
-    
+
     yield
-    
+
     logger.info("🛑 Stock MAGI System shutting down...")
 
 
@@ -68,7 +68,7 @@ app.include_router(router)
 async def root():
     """
     ルートエンドポイント
-    
+
     Returns:
         API 情報
     """
@@ -88,7 +88,7 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "src.main:app",
         host="0.0.0.0",

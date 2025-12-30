@@ -1,11 +1,12 @@
 {
   "name": "Stock MAGI System - ARM64 Python Environment",
   "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
-  
+
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true,
@@ -14,7 +15,7 @@
       "userGid": "1000"
     }
   },
-  
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -39,15 +40,15 @@
       }
     }
   },
-  
+
   "postCreateCommand": "pip install --upgrade pip && pip install poetry && poetry config virtualenvs.in-project true",
-  
+
   "remoteEnv": {
     "PYTHONUNBUFFERED": "1"
   },
-  
+
   "forwardPorts": [8000],
-  
+
   "mounts": [
     "source=${localEnv:HOME}/.azure,target=/home/vscode/.azure,type=bind,consistency=cached"
   ]

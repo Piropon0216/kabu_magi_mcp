@@ -1,0 +1,39 @@
+name: Integration - Foundry Live
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+      - release/**
+
+jobs:
+  integration:
+    name: Foundry integration tests
+    runs-on: ubuntu-latest
+    if: ${{ secrets.FOUNDRY_API_KEY && secrets.FOUNDRY_ENDPOINT && secrets.FOUNDRY_DEPLOYMENT && secrets.FOUNDRY_API_VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-ansi
+
+      - name: Run integration tests
+        env:
+          FOUNDRY_ENDPOINT: ${{ secrets.FOUNDRY_ENDPOINT }}
+          FOUNDRY_API_KEY: ${{ secrets.FOUNDRY_API_KEY }}
+          FOUNDRY_DEPLOYMENT: ${{ secrets.FOUNDRY_DEPLOYMENT }}
+          FOUNDRY_API_VERSION: ${{ secrets.FOUNDRY_API_VERSION }}
+        run: |
+          poetry run pytest -q -m integration

@@ -148,6 +148,41 @@ poetry run pytest --cov=src --cov-report=html
 poetry run pytest tests/test_melchior_agent.py
 ```
 
+## 🔐 Foundry 統合（ローカル & CI）
+
+### 必要な環境変数
+- `FOUNDRY_ENDPOINT` — Microsoft Foundry / Project エンドポイント
+- `FOUNDRY_API_KEY` — API キー
+- `FOUNDRY_DEPLOYMENT` — 使用するデプロイメント名（例: `gpt-4o-mini`）
+- `FOUNDRY_API_VERSION` — API バージョン（例: `2024-05-01-preview`）
+
+これらを `.env` に設定するか、環境変数としてエクスポートしてください。
+
+### ローカルでの統合テスト実行
+1. `.env` に上記値を設定する
+2. 開発サーバーを起動するか、テストを直接実行します
+
+```bash
+# API サーバー起動
+poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+# 実ネットワーク向け統合テストのみを実行
+poetry run pytest -q -m integration
+```
+
+テストは `tests/test_integration_foundry_live.py` に実装しており、必要環境変数が揃っていない場合は自動的にスキップされます。
+
+### GitHub Actions ワークフローの挙動
+- ワークフロー: `.github/workflows/integration-foundry.yml`
+- トリガー: `workflow_dispatch`（手動） と `push`（`main`, `release/**`）
+- 実行条件: リポジトリに `secrets.FOUNDRY_API_KEY`, `secrets.FOUNDRY_ENDPOINT`, `secrets.FOUNDRY_DEPLOYMENT`, `secrets.FOUNDRY_API_VERSION` が設定されている場合にのみ実行されます。
+
+つまり、通常のプッシュでは Secrets が未設定ならスキップされ、プロジェクト管理者が Secrets を用意した上で手動実行か対象ブランチへの push によって実行されます。
+
+---
+
+
+
 ---
 
 ## 📝 開発ガイドライン

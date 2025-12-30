@@ -3,6 +3,7 @@ Unit tests for decision models
 """
 
 import pytest
+
 from src.common.models.decision_models import Action, AgentVote, FinalDecision
 
 
@@ -21,7 +22,7 @@ def test_agent_vote_valid():
         confidence=0.85,
         reasoning="PER 12.5, ROE 15%, 自己資本比率 50% で財務健全"
     )
-    
+
     assert vote.agent_name == "Melchior"
     assert vote.action == Action.BUY
     assert vote.confidence == 0.85
@@ -38,18 +39,19 @@ def test_agent_vote_confidence_range():
         reasoning="不確実性が高いため HOLD を推奨します"
     )
     assert vote.confidence == 0.5
-    
-    # 範囲外 (0.0 未満)
-    with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
+
+    # 範囲外 (0.0 未満) - Pydantic v2 では ValidationError
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError, match="greater than or equal to 0"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
             confidence=-0.1,
             reasoning="Invalid confidence value test"
         )
-    
+
     # 範囲外 (1.0 超過)
-    with pytest.raises(ValueError, match="Confidence must be between 0.0 and 1.0"):
+    with pytest.raises(ValidationError, match="less than or equal to 1"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
@@ -60,7 +62,8 @@ def test_agent_vote_confidence_range():
 
 def test_agent_vote_reasoning_min_length():
     """AgentVote の reasoning 最小文字数チェック"""
-    with pytest.raises(ValueError, match="Reasoning must be at least 10 characters"):
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError, match="at least 10 characters"):
         AgentVote(
             agent_name="Melchior",
             action=Action.BUY,
@@ -85,7 +88,7 @@ def test_final_decision_valid():
             reasoning="上昇トレンドが継続しています"
         ),
     ]
-    
+
     decision = FinalDecision(
         final_action=Action.BUY,
         votes=votes,
@@ -93,7 +96,7 @@ def test_final_decision_valid():
         summary="2エージェントが BUY 判定。ファンダメンタルズとテクニカル両面で買いシグナル。",
         has_conflict=False
     )
-    
+
     assert decision.final_action == Action.BUY
     assert len(decision.votes) == 2
     assert decision.weighted_confidence == 0.80
@@ -102,6 +105,7 @@ def test_final_decision_valid():
 
 def test_final_decision_summary_min_length():
     """FinalDecision の summary 最小文字数チェック"""
+    from pydantic import ValidationError
     votes = [
         AgentVote(
             agent_name="Melchior",
@@ -110,8 +114,8 @@ def test_final_decision_summary_min_length():
             reasoning="判断材料が不足しています"
         )
     ]
-    
-    with pytest.raises(ValueError, match="Summary must be at least 20 characters"):
+
+    with pytest.raises(ValidationError, match="at least 20 characters"):
         FinalDecision(
             final_action=Action.HOLD,
             votes=votes,
@@ -122,7 +126,8 @@ def test_final_decision_summary_min_length():
 
 def test_final_decision_empty_votes():
     """FinalDecision の votes 空リストチェック"""
-    with pytest.raises(ValueError, match="Votes list cannot be empty"):
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError, match="at least 1 item"):
         FinalDecision(
             final_action=Action.HOLD,
             votes=[],
@@ -134,7 +139,7 @@ def test_final_decision_empty_votes():
 def test_final_decision_conflict_detection_placeholder():
     """
     FinalDecision の has_conflict フラグテスト
-    
+
     Phase 1: 手動設定
     Phase 2: 自動検出実装予定
     """
@@ -152,14 +157,14 @@ def test_final_decision_conflict_detection_placeholder():
             reasoning="ネガティブなセンチメントが優勢です"
         ),
     ]
-    
+
     decision = FinalDecision(
         final_action=Action.HOLD,
         votes=votes,
         summary="エージェント間で意見が対立しているため HOLD を推奨します。",
         has_conflict=True  # Phase 1: 手動設定
     )
-    
+
     assert decision.has_conflict is True
 
 

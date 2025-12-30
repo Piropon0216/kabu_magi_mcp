@@ -21,7 +21,7 @@
 
 ### Microsoft Agent Framework Investigation
 - **Context**: マルチエージェントシステムの実装方法調査（フルスクラッチ vs フレームワーク活用）
-- **Sources Consulted**: 
+- **Sources Consulted**:
   - Microsoft Agent Framework Documentation (github.com/microsoft/agent-framework)
   - Azure AI Agent Service Best Practices
   - AI Toolkit Agent Code Generation Guidelines
@@ -103,9 +103,9 @@
     ```python
     from fastapi import FastAPI
     from agent_framework import Agent, GroupChatOrchestrator
-    
+
     app = FastAPI()
-    
+
     @app.post("/api/analyze")
     async def analyze(ticker: str):
         # Agent Framework でマルチエージェント実行
@@ -131,12 +131,12 @@
     ```python
     from agent_framework import Agent
     from agent_framework.plugins.mcp import MCPServerPlugin
-    
+
     # MCP サーバー接続
     mcp_plugin = MCPServerPlugin(
         server_command="npx @modelcontextprotocol/server-yahoo-finance"
     )
-    
+
     # エージェントに MCP プラグイン追加
     agent = Agent(
         name="Melchior",
@@ -168,20 +168,20 @@
     # src/common/consensus/orchestrators/group_chat_consensus.py
     from agent_framework import GroupChatOrchestrator, Agent
     from typing import List, Dict
-    
+
     class ReusableConsensusOrchestrator:
         """ドメイン非依存の合議エンジン"""
-        
+
         def __init__(self, agents: List[Agent], voting_strategy: str = "majority"):
             self.agents = agents
             self.voting_strategy = voting_strategy
             self.orchestrator = GroupChatOrchestrator(agents=agents)
-        
+
         async def reach_consensus(self, input_context: Dict) -> Dict:
             """汎用合議実行"""
             # GroupChat で討論
             discussion = await self.orchestrator.run(input_context)
-            
+
             # 投票戦略で最終判断
             final_decision = self._apply_voting_strategy(discussion)
             return final_decision
@@ -210,16 +210,16 @@
   - **Agent Framework 統合**:
     ```python
     from agent_framework_azure_ai import AzureAIClientConfiguration
-    
+
     config = AzureAIClientConfiguration(
         endpoint=os.getenv("FOUNDRY_ENDPOINT"),
         api_key=os.getenv("FOUNDRY_API_KEY"),
         deployment="gpt-4o"
     )
-    
+
     agent = Agent(name="Melchior", model_client=config)
     ```
-  - **教育的価値**: 
+  - **教育的価値**:
     - Python初学者向けに Foundry UI でプロンプト調整 → コード化の流れ
     - コスト最適化の可視化（トークン数、推論時間）
 - **Implications**:
@@ -241,7 +241,7 @@
     ```python
     from typing import List, Dict, Optional
     from agent_framework import Agent
-    
+
     async def analyze_stock(
         ticker: str,
         agents: List[Agent]
@@ -403,7 +403,7 @@
 
 ### Risk 1: DuckDB Connector Specification Delay
 - **Risk**: Phase 3でのDuckDB統合がコネクタ仕様未確定により遅延
-- **Mitigation**: 
+- **Mitigation**:
   - Phase 1で`IDatabaseProvider`インターフェース定義
   - 要件6を「Phase 3 - Pending」として明示
   - モックデータで先行開発、コネクタ仕様確定後に実装
