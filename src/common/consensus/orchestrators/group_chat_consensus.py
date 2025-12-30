@@ -38,7 +38,13 @@ class ReusableConsensusOrchestrator:
                 - "weighted": 加重投票 (Phase 2)
         """
         self.agents = agents
-        self.voting_strategy = voting_strategy
+                agent_name = getattr(agent, "name", "UnknownAgent")
+                import os
+                import json
+                import datetime
+                import logging
+
+                _logger = logging.getLogger(__name__)
 
         # Phase 2 で Agent Framework の GroupChatOrchestrator を実装
         # from agent_framework import GroupChatOrchestrator
@@ -133,6 +139,34 @@ class ReusableConsensusOrchestrator:
                     )
                     votes.append(vote)
                     continue
+
+            # Structured logging for audit / replay. If `CONSENSUS_LOG_PATH` is set,
+            # append a JSON line with the input, per-agent votes and summary.
+            try:
+                log_path = os.environ.get("CONSENSUS_LOG_PATH")
+                if log_path:
+                    record = {
+                        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                        "ticker": input_context.get("ticker"),
+                        "final_action": decision.final_action.value,
+                        "summary": decision.summary,
+                        "votes": [
+                            {
+                                "agent_name": v.agent_name,
+                                "action": v.action.value if hasattr(v.action, "value") else str(v.action),
+                                "confidence": float(v.confidence) if getattr(v, "confidence", None) is not None else None,
+                                "reasoning": getattr(v, "reasoning", ""),
+                            }
+                            for v in decision.votes
+                        ],
+                    }
+                    # ensure directory exists
+                    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+                    with open(log_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    _logger.debug("Consensus recorded to %s", log_path)
+            except Exception:
+                _logger.exception("Failed to write consensus log")
                 except Exception:
                     # On agent error, append a neutral HOLD vote
                     votes.append(
