@@ -67,6 +67,9 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --strict-markers"
+markers = [
+    "integration: marks tests as integration tests requiring external services"
+]
 
 [tool.mypy]
 python_version = "3.11"

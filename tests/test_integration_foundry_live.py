@@ -45,7 +45,9 @@ async def test_api_invoke_live_foundry():
     # Ensure API endpoint flow works end-to-end against live Foundry
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        resp = await client.post("/api/analyze", json={"ticker": "7203.T", "include_reasoning": False})
+        resp = await client.post(
+            "/api/analyze", json={"ticker": "7203.T", "include_reasoning": False}
+        )
         assert resp.status_code == 200
 
 

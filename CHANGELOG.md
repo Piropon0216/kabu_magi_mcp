@@ -5,11 +5,16 @@
 
 ## [Unreleased]
 
-### Uncommitted changes (work-in-progress)
-- `src/stock_magi/api/endpoints.py`: API endpoint adjustments and exception-chaining fixes. (uncommitted)
-- `tests/test_foundry_tool_registry.py`: test updates aligning with Pydantic v2 changes. (uncommitted)
+### 変更内容（作業中）
+- `src/mcp_providers/jquants_mcp.py`：J-Quants 用の MCP PoC を追加しました。エンドポイント `GET /tools/jquants/price/{ticker}` を提供し、プロジェクトルートの `.env` から認証情報を読み取ります。公式の `jquants-api-client` を優先で利用し、存在しない場合はサンプルクライアントにフォールバックします。取得結果の `pandas.DataFrame` は JSON 互換に正規化して返却します。
+- `sample/client.py`：認証関連の改善を行いました。`mail_address` / `password` をコンストラクタで受け取れるようにし、環境変数名の別名を許容、空のリフレッシュトークンを無視する挙動を追加しました。
+- `docs/jquants_mcp.md`：拡張手順、ローカルでの検証方法、コンテナ化（Azure Container Apps Jobs 向け）に関するドキュメントを追加しました。
+- `CHANGELOG.md`：未リリース項目を日本語で記載しました。
 
-注: 上記はワーキングツリーにある未コミットの変更を短く記録したものです。コミット後、各エントリに代表的な短いコミットハッシュを追記します。ハッシュが増えた場合は、セマンティックバージョニング（マイナーバージョン）を適切に増やして管理してください。
+コミット: (未コミット)
+関連バージョン: 0.1.0
+
+注: 上記はワーキングツリーにある未コミットの変更を短く記録したものです。コミット後に短いコミットハッシュを追記します。
 
 ## [0.1.2] - 2025-12-29 (005ab3d)
 

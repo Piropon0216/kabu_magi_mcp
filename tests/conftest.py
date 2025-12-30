@@ -13,6 +13,15 @@ def filter_and_set_foundry_env_vars(monkeypatch):
     for k, v in os.environ.items():
         print(f"  {k}={v}")
     original_env = os.environ.copy()
+
+    # Allow preserving the real environment for live integration runs
+    # If FOUNDRY_PRESERVE_ENV is set to '1', do not override FOUNDRY_* vars.
+    if os.environ.get("FOUNDRY_PRESERVE_ENV") == "1":
+        print("[DEBUG] FOUNDRY_PRESERVE_ENV=1 — skipping env filtering")
+        yield
+        # restore nothing because we didn't modify env
+        return
+
     # FOUNDRY_ で始まるもの以外を削除
     keys_to_remove = [k for k in os.environ if not k.startswith("FOUNDRY_")]
     for k in keys_to_remove:
