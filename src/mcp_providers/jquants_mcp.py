@@ -1,8 +1,8 @@
-from typing import Any, Dict
+import importlib
 import os
 import traceback
-import importlib
 from datetime import datetime, timedelta
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 
@@ -27,7 +27,7 @@ def _load_project_dotenv():
         return
 
     try:
-        with open(env_path, "r") as f:
+        with open(env_path) as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#") or "=" not in line:
