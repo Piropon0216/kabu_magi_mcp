@@ -5,6 +5,7 @@ This orchestrator wraps Agent Framework's GroupChatOrchestrator to provide
 a domain-agnostic consensus mechanism for multi-agent systems.
 """
 
+import inspect
 from typing import Any
 
 from src.common.models.decision_models import Action, AgentVote, FinalDecision
@@ -97,10 +98,13 @@ class ReusableConsensusOrchestrator:
                     )
                     continue
 
-            # If agent exposes async `analyze`, call it and parse the result
-            if hasattr(agent, "analyze"):
+            # If agent exposes async `analyze`, call it and parse the result.
+            # Use `inspect.iscoroutinefunction` to avoid awaiting MagicMock
+            # attributes (MagicMock provides attributes dynamically).
+            analyze_attr = getattr(agent, "analyze", None)
+            if analyze_attr and inspect.iscoroutinefunction(analyze_attr):
                 try:
-                    result = await agent.analyze(input_context.get("ticker", ""))
+                    result = await analyze_attr(input_context.get("ticker", ""))
                     # Expect result to be a dict like {"action": "BUY", "confidence": 0.8, "reasoning": "..."}
                     action_str = result.get("action") if isinstance(result, dict) else None
                     confidence = (
@@ -139,6 +143,7 @@ class ReusableConsensusOrchestrator:
                             reasoning="agent error",
                         )
                     )
+                    continue
 
             # Fallback mock vote
             votes.append(
