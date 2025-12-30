@@ -55,7 +55,11 @@ def _build_jquants_client() -> JQuantsAPIClient:
     Priority: JQUANTS_REFRESH_TOKEN -> (JQUANTS_MAIL_ADDRESS + JQUANTS_PASSWORD) -> raise
     """
     refresh = os.environ.get("JQUANTS_REFRESH_TOKEN") or os.environ.get("JQUANTS_API_REFRESH_TOKEN")
-    mail = (os.environ.get("JQUANTS_MAIL_ADDRESS") or os.environ.get("JQUANTS_EMAIL") or os.environ.get("JQUANTS_API_MAIL_ADDRESS"))
+    mail = (
+        os.environ.get("JQUANTS_MAIL_ADDRESS")
+        or os.environ.get("JQUANTS_EMAIL")
+        or os.environ.get("JQUANTS_API_MAIL_ADDRESS")
+    )
     password = os.environ.get("JQUANTS_PASSWORD") or os.environ.get("JQUANTS_API_PASSWORD")
 
     # If official client is available, prefer it
@@ -87,7 +91,9 @@ def _build_jquants_client() -> JQuantsAPIClient:
         if mail and password:
             return JQuantsAPIClient(mail_address=mail, password=password)
 
-    raise RuntimeError("No JQuants credentials or client available: set JQUANTS_REFRESH_TOKEN or JQUANTS_MAIL_ADDRESS + JQUANTS_PASSWORD and install jquantsapi or keep sample client")
+    raise RuntimeError(
+        "No JQuants credentials or client available: set JQUANTS_REFRESH_TOKEN or JQUANTS_MAIL_ADDRESS + JQUANTS_PASSWORD and install jquantsapi or keep sample client"
+    )
 
 
 def _get_refresh_token_via_http(base: str, mail: str, password: str) -> str:
@@ -112,12 +118,16 @@ def get_price(ticker: str) -> Any:
     This returns a small JSON: {ticker, price, raw} where `price` is best-effort.
     """
     # normalize ticker for JQuants (e.g., '7203.T' -> '7203')
-    code = str(ticker).split('.')[0]
+    code = str(ticker).split(".")[0]
 
+    client = None
+    _client_exc = None
     try:
         client = _build_jquants_client()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _client_exc = e
+    if _client_exc:
+        raise HTTPException(status_code=500, detail=str(_client_exc)) from _client_exc
 
     # Use a small date range to request latest price. Use YYYYMMDD format expected by sample client.
     today = datetime.utcnow().date()
@@ -125,6 +135,7 @@ def get_price(ticker: str) -> Any:
     start = yesterday.strftime("%Y%m%d")
     end = today.strftime("%Y%m%d")
 
+    _data_exc = None
     try:
         # normalize calls across different client implementations
         if hasattr(client, "get_stock_prices"):
@@ -133,7 +144,9 @@ def get_price(ticker: str) -> Any:
             # Official client: prefer get_prices_daily_quotes for a single code when available
             if hasattr(client, "get_prices_daily_quotes"):
                 try:
-                    data = client.get_prices_daily_quotes(code=code, from_yyyymmdd=start, to_yyyymmdd=end)
+                    data = client.get_prices_daily_quotes(
+                        code=code, from_yyyymmdd=start, to_yyyymmdd=end
+                    )
                 except TypeError:
                     # fallback to datetime conversion if needed
                     from dateutil import tz
@@ -141,7 +154,9 @@ def get_price(ticker: str) -> Any:
                     tz_tokyo = tz.gettz("Asia/Tokyo")
                     sd = datetime.strptime(start, "%Y%m%d").replace(tzinfo=tz_tokyo)
                     ed = datetime.strptime(end, "%Y%m%d").replace(tzinfo=tz_tokyo)
-                    data = client.get_prices_daily_quotes(code=code, from_yyyymmdd=sd, to_yyyymmdd=ed)
+                    data = client.get_prices_daily_quotes(
+                        code=code, from_yyyymmdd=sd, to_yyyymmdd=ed
+                    )
             else:
                 # get_price_range returns all codes; filter by Code column if present
                 try:
@@ -166,13 +181,15 @@ def get_price(ticker: str) -> Any:
             else:
                 raise RuntimeError("client has no supported price API")
     except Exception as e:
+        _data_exc = e
         detail = f"upstream error: {e}"
         # include traceback in logs for debugging
         try:
             print(traceback.format_exc())
         except Exception:
             pass
-        raise HTTPException(status_code=502, detail=detail)
+    if _data_exc:
+        raise HTTPException(status_code=502, detail=detail) from _data_exc
 
     # Try to extract a numeric price in a best-effort way
     price = None
@@ -192,7 +209,7 @@ def get_price(ticker: str) -> Any:
                 if price is None:
                     last = data.iloc[-1]
                     for v in last.values:
-                        if isinstance(v, (int, float)):
+                        if isinstance(v, int | float):
                             price = float(v)
                             break
     except Exception:
