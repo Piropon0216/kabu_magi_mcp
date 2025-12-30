@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 from typing import Any
 
 import httpx
@@ -55,8 +54,8 @@ class MarketDataProvider:
                 price = getattr(c, "get_latest_price", lambda t: {"price": 0})(ticker)
                 if isinstance(price, dict) and "price" in price:
                     return {"price": float(price["price"]), "history": price.get("history", []), "prev_close": price.get("prev_close", 0)}
-            except Exception:
-                raise RuntimeError("jquants data source not implemented in this demo or client unavailable")
+            except Exception as err:
+                raise RuntimeError("jquants data source not implemented in this demo or client unavailable") from err
 
         raise RuntimeError("unknown data source")
 
