@@ -40,11 +40,11 @@ class JQuantsAPIClient:
     def _get_refresh_token_from_credentials(self, mail_address: str, password: str) -> str:
         """
         メールアドレスとパスワードからリフレッシュトークンを取得
-        
+
         Args:
             mail_address: メールアドレス
             password: パスワード
-        
+
         Returns:
             リフレッシュトークン
         """
@@ -77,7 +77,7 @@ class JQuantsAPIClient:
     def _load_env_file(self):
         """
         .envファイルを読み込む
-        
+
         Returns:
             dict: 環境変数の辞書
         """
@@ -143,7 +143,7 @@ class JQuantsAPIClient:
     def get_stock_list(self):
         """
         銘柄一覧を取得
-        
+
         Returns:
             pd.DataFrame: 銘柄一覧データ
         """
@@ -159,12 +159,12 @@ class JQuantsAPIClient:
     def get_stock_prices(self, start_date: str, end_date: str, code: str | None = None):
         """
         株価データを取得
-        
+
         Args:
             start_date: 開始日 (YYYYMMDD形式)
             end_date: 終了日 (YYYYMMDD形式)
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 株価データ
         """
@@ -192,10 +192,10 @@ class JQuantsAPIClient:
     def get_statements(self, code: str | None = None):
         """
         財務諸表データを取得
-        
+
         Args:
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 財務諸表データ
         """
@@ -220,12 +220,12 @@ class JQuantsAPIClient:
     def get_trades_spec(self, start_date: str | None = None, end_date: str | None = None, code: str | None = None):
         """
         投資部門別売買データを取得
-        
+
         Args:
             start_date: 開始日 (YYYYMMDD形式、Noneの場合は直近データ)
             end_date: 終了日 (YYYYMMDD形式、Noneの場合は直近データ)
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 投資部門別売買データ
         """
@@ -279,12 +279,12 @@ class JQuantsAPIClient:
     def get_weekly_margin_interest(self, start_date: str | None = None, end_date: str | None = None, code: str | None = None):
         """
         信用取引週末残高データを取得
-        
+
         Args:
             start_date: 開始日 (YYYYMMDD形式、Noneの場合は直近データ)
             end_date: 終了日 (YYYYMMDD形式、Noneの場合は直近データ)
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 信用取引週末残高データ
         """
@@ -344,12 +344,12 @@ class JQuantsAPIClient:
     def get_short_selling(self, start_date: str | None = None, end_date: str | None = None, sector: str | None = None):
         """
         業種別空売り比率データを取得
-        
+
         Args:
             start_date: 開始日 (YYYYMMDD形式、Noneの場合は直近データ)
             end_date: 終了日 (YYYYMMDD形式、Noneの場合は直近データ)
             sector: 業種名（Noneの場合は全業種）
-        
+
         Returns:
             pd.DataFrame: 業種別空売り比率データ
         """
@@ -402,12 +402,12 @@ class JQuantsAPIClient:
     def get_short_selling_positions(self, start_date: str | None = None, end_date: str | None = None, code: str | None = None):
         """
         空売り残高報告データを取得
-        
+
         Args:
             start_date: 開始日 (YYYYMMDD形式、Noneの場合は直近データ)
             end_date: 終了日 (YYYYMMDD形式、Noneの場合は直近データ)
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 空売り残高報告データ
         """
@@ -471,12 +471,12 @@ class JQuantsAPIClient:
     def get_announcement(self, code: str | None = None):
         """
         決算発表予定日データを取得
-        
+
         Standard Plan API: /v1/fins/announcement
-        
+
         Args:
             code: 銘柄コード（Noneの場合は全銘柄）
-        
+
         Returns:
             pd.DataFrame: 決算発表予定日データ
         """

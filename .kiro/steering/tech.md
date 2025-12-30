@@ -36,13 +36,13 @@
   - `MCPPluginRegistry`: 複数MCPサーバーの統一管理
   - `VotingStrategy`: 多数決/重み付け投票の戦略パターン実装
   - **目的**: 株式以外のドメイン（不動産、医療など）でも再利用可能
-  
+
 - **ドメイン固有層** (`src/stock_magi/`):
   - エージェント定義（Melchior, Balthasar, Casper）
   - 株式分析プロンプトテンプレート
   - FastAPI エンドポイント
-  
-- **学習リソース**: 
+
+- **学習リソース**:
   - [Microsoft Agent Framework 公式](https://github.com/microsoft/agent-framework)
   - [Agent Framework ドキュメント](https://microsoft.github.io/agent-framework/)
   - [マルチエージェントシステム設計](https://learn.microsoft.com/ja-jp/azure/ai-studio/concepts/agents)

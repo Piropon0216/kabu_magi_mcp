@@ -1,6 +1,6 @@
 # Stock MAGI System - Development Context
 
-**作成日**: 2025-12-28  
+**作成日**: 2025-12-28
 **対象**: DevContainer 環境で作業を引き継ぐ開発者向け
 
 ---

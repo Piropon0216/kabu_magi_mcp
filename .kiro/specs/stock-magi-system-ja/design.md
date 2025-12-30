@@ -19,22 +19,22 @@
 graph TD
     User[User Request] -->|HTTP POST| API[FastAPI Endpoint<br/>/api/analyze]
     API -->|Invoke| Orchestrator["ReusableConsensusOrchestrator<br/>(src/common/consensus/)"]
-    
+
     subgraph "Agent Framework Core"
         Orchestrator -->|GroupChat| GroupChat[GroupChatOrchestrator]
         GroupChat -->|Discussion| Agents[3 Agents<br/>Melchior, Balthasar, Casper]
     end
-    
+
     subgraph "MCP Plugin Ecosystem"
         Agents -->|Use| MCPPlugin[MCPServerPlugin]
         MCPPlugin -->|Connect| Yahoo[Yahoo Finance<br/>MCP Server]
         MCPPlugin -->|Connect| AzureDocs[Azure Docs<br/>MCP Server]
     end
-    
+
     subgraph "LLM Backend"
         Agents -->|Call| Foundry[Microsoft Foundry<br/>GPT-4o]
     end
-    
+
     Orchestrator -->|Apply| VotingStrategy["VotingStrategy<br/>(Majority/Weighted)"]
     VotingStrategy -->|Return| Decision[FinalDecision]
     Decision -->|JSON| API
@@ -60,7 +60,7 @@ src/common/
     └── decision_models.py               # 共通データモデル(Action, Decision)
 ```
 
-**再利用パターン**: 
+**再利用パターン**:
 - 不動産分析: `src/real_estate/` を追加、`src/common/` はそのまま流用
 - 医療診断: `src/medical/` を追加、合議エンジンを再利用
 
@@ -110,13 +110,13 @@ from ..strategies.voting_strategy import VotingStrategy
 class ReusableConsensusOrchestrator:
     """
     ドメイン非依存の汎用マルチエージェント合議エンジン
-    
+
     使用例:
       - 株式分析: 3エージェント(Melchior, Balthasar, Casper)で Buy/Sell/Hold判定
       - 不動産分析: 3エージェント(Location, Finance, Risk)で投資判定
       - 医療診断: 3エージェント(Radiology, Pathology, Clinical)で診断支援
     """
-    
+
     def __init__(
         self,
         agents: List[Agent],
@@ -129,23 +129,23 @@ class ReusableConsensusOrchestrator:
             agents=agents,
             max_turns=max_turns
         )
-    
+
     async def reach_consensus(self, input_context: Dict[str, Any]) -> Dict[str, Any]:
         """
         汎用合議実行
-        
+
         Args:
             input_context: ドメイン固有のコンテキスト(例: {"ticker": "7203.T"})
-        
+
         Returns:
             FinalDecision: 最終判断 + 討論履歴
         """
         # Step 1: GroupChatで討論
         discussion_result = await self.orchestrator.run(input_context)
-        
+
         # Step 2: 投票戦略で最終判断
         final_decision = self.voting_strategy.aggregate(discussion_result)
-        
+
         return {
             "decision": final_decision,
             "discussion_history": discussion_result.messages,
@@ -164,7 +164,7 @@ from agent_framework.plugins.mcp import MCPServerPlugin
 def create_melchior_agent(mcp_plugin: MCPServerPlugin) -> Agent:
     """
     Melchior: ファンダメンタルズ分析重視の保守的エージェント
-    
+
     ペルソナ:
       - NERV MAGI System の科学者人格
       - 財務諸表、PER/PBR、ニュースセンチメントを重視
@@ -174,13 +174,13 @@ def create_melchior_agent(mcp_plugin: MCPServerPlugin) -> Agent:
         name="Melchior",
         system_message="""
         あなたは株式アナリストのMelchiorです。
-        
+
         **分析方針**:
         - ファンダメンタルズ分析を最重視
         - 財務諸表(PER, PBR, ROE)の健全性を確認
         - ニュースセンチメントで市場心理を補完
         - 保守的な判断(リスク回避)
-        
+
         **出力形式**:
         1. 判断: BUY/SELL/HOLD
         2. 信頼度: 0.0-1.0
@@ -204,36 +204,36 @@ import json
 class MCPPluginRegistry:
     """
     複数MCPサーバーを統一管理する汎用レジストリ
-    
+
     対応データソース:
       - Morningstar (PER, PBR, ROE など詳細財務指標) - **MVP (Phase 1)** - Foundry Tool Catalog
       - Yahoo Finance (株価チャート、リアルタイムデータ) - **Phase 2** - npm MCP Server
       - Azure Docs (クラウドナレッジ) - **Phase 2**
       - DuckDB (ローカルデータベース) - **Phase 3**
-    
+
     注意: Morningstar は Foundry Tool Catalog から直接利用可能。
          Phase 1 では Foundry Portal (https://ai.azure.com/) で GUI 設定するのみ。
     """
-    
+
     def __init__(self, config_path: str = "config/mcp_servers.json"):
         self.plugins: Dict[str, MCPServerPlugin] = {}
         self._load_config(config_path)
-    
+
     def _load_config(self, path: str):
         """設定ファイルからMCPサーバー情報を読み込み"""
         with open(path) as f:
             config = json.load(f)
-        
+
         for name, server_config in config.items():
             self.plugins[name] = MCPServerPlugin(
                 server_command=server_config["command"],
                 args=server_config.get("args", [])
             )
-    
+
     def get_plugin(self, name: str) -> MCPServerPlugin:
         """名前でMCPプラグインを取得"""
         return self.plugins[name]
-    
+
     def get_plugins_for_agent(self, agent_type: str) -> List[MCPServerPlugin]:
         """エージェント種別に応じたMCPプラグインセットを返す"""
         # 例: Melchiorは Yahoo Finance のみ、将来的に Azure Docs 追加
@@ -437,7 +437,7 @@ async def test_consensus_majority_vote():
         agents=mock_agents,
         voting_strategy="majority"
     )
-    
+
     result = await orchestrator.reach_consensus({"ticker": "TEST"})
     assert result["decision"] in ["BUY", "SELL", "HOLD"]
 ```
@@ -537,19 +537,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build Docker image
         run: docker build -t stock-magi:${{ github.sha }} .
-      
+
       - name: Run tests
         run: |
           docker run stock-magi:${{ github.sha }} pytest
-      
+
       - name: Push to GHCR
         run: |
           docker tag stock-magi:${{ github.sha }} ghcr.io/${{ github.repository }}:latest
           docker push ghcr.io/${{ github.repository }}:latest
-      
+
       - name: Deploy to Azure
         uses: azure/container-apps-deploy-action@v1
         with:
