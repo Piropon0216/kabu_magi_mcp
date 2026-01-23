@@ -78,3 +78,8 @@ venv/
 
 # Coverage
 .coverage
+htmlcov/
+
+# Linter and type checker cache
+.mypy_cache/
+.ruff_cache/
